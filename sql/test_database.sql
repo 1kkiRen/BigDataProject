@@ -1,2 +1,2 @@
-SELECT * FROM stations LIMIT 10;
-SELECT * FROM records LIMIT 10;
+SELECT * FROM stations LIMIT 5;
+SELECT * FROM records LIMIT 5;

@@ -1,6 +1,8 @@
 from pathlib import Path
+
+import datasets
 import psycopg2 as psql
-from datasets import load_dataset
+import datasets
 from pprint import pprint
 
 SQL_DIR = Path("sql")
@@ -18,8 +20,7 @@ DB_NAME = "mydatabase"
 DB_PORT = 5432
 
 
-# TODO fill None cells
-# TODO add pipeline to put new data (if so, file for preprocessing)
+# TODO: fill None cells
 
 def connect():
 	"""Establish a database connection."""
@@ -65,13 +66,13 @@ def import_data(conn):
 	with open(SQL_DIR / "import_data.sql") as file:
 		commands = file.readlines()
 
+	commands = [c.strip() for c in commands if c.strip().split(";")[0]]
 	cur = conn.cursor()
 
 	# Put all data
 	for cmd, file in zip(commands, data_files):
 		with open((DATA_DIR / file), "r") as data_file:
 			cur.copy_expert(cmd, data_file)
-		print(file)
 
 	conn.commit()
 	print("Data imported!")
@@ -87,9 +88,24 @@ def test_db(conn):
 			pprint(cur.fetchall())
 
 
-def preprocess_data():
-	ds = load_dataset("Geoweaver/ozone_training_data", split="train")
-	print("Loaded dataset")
+def convert_types(records):
+	columns_type_swap = [
+		"airnow_ozon", "cmaq_ozon", "cmaq_no2", "cmaq_co", "cmaq_organic_carbon",
+		"pressure", "pbl", "temperature", "wind_speed", "wind_direction", "radiation",
+	]
+
+	for col in columns_type_swap:
+		records[col] = records[col].astype(int)
+	return records
+
+
+def load_data(cache):
+	if (DATA_DIR / "ds").exists():
+		ds = datasets.load_from_disk(DATA_DIR / "ds")
+		return ds
+
+	ds = datasets.load_dataset("Geoweaver/ozone_training_data", split="train")
+	print("Loaded dataset from HF")
 
 	# Remove useless columns
 	ds = ds.remove_columns([
@@ -121,10 +137,20 @@ def preprocess_data():
 	}
 	ds = ds.rename_columns(name_mapping)
 
+	if cache:
+		ds.save_to_disk(DATA_DIR / "ds")
+	return ds
+
+
+def preprocess_data():
+	ds = load_data(cache=True)
+
 	stations = ds.select_columns(["station_id", "latitude", "longitude"]).to_pandas()
 	records = ds.remove_columns(["latitude", "longitude"]).to_pandas()
 
+	# Remove duplicates and convert data to int
 	stations = stations.drop_duplicates(subset="station_id")
+	records = convert_types(records)
 
 	# Save to csv
 	stations.to_csv(DATA_DIR / "stations.csv", index=False)
