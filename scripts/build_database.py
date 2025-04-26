@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import datasets
 import psycopg2 as psql
 import datasets
 from pprint import pprint
@@ -18,6 +17,27 @@ DB_USER = "myuser"
 DB_NAME = "mydatabase"
 
 DB_PORT = 5432
+
+NAME_MAPPING = {
+	"StationID": "station_id",
+	"Latitude_x": "latitude",
+	"Longitude_x": "longitude",
+	"AirNOW_O3": "airnow_ozon",
+	"CMAQ12KM_O3(ppb)": "cmaq_ozon",
+	"CMAQ12KM_NO2(ppb)": "cmaq_no2",
+	"CMAQ12KM_CO(ppm)": "cmaq_co",
+	"CMAQ_OC(ug/m3)": "cmaq_organic_carbon",
+	"PRSFC(Pa)": "pressure",
+	"PBL(m)": "pbl",
+	"TEMP2(K)": "temperature",
+	"WSPD10(m/s)": "wind_speed",
+	"WDIR10(degree)": "wind_direction",
+	"RGRND(W/m2)": "radiation",
+	"CFRAC": "cloud_fraction",
+	"month": "month",
+	"day": "day",
+	"hours": "hour",
+}
 
 
 # TODO: fill None cells
@@ -39,7 +59,12 @@ def connect():
 		f"password={password}"
 	)
 
-	conn = psql.connect(conn_string)
+	try:
+		conn = psql.connect(conn_string)
+	except psql.Error as e:
+		print(e)
+		exit(1)
+
 	print("Connected!")
 	return conn
 
@@ -47,8 +72,7 @@ def connect():
 def create_tables(conn):
 	cur = conn.cursor()
 	with open(SQL_DIR / "create_tables.sql") as file:
-		content = file.read()
-		cur.execute(content)
+		cur.execute(file.read())
 	conn.commit()
 
 	print("Tables created!")
@@ -64,11 +88,9 @@ def import_data(conn):
 
 	# Read commands
 	with open(SQL_DIR / "import_data.sql") as file:
-		commands = file.readlines()
+		commands = [cmd.strip() for cmd in file.read().split(';') if cmd.strip()]
 
-	commands = [c.strip() for c in commands if c.strip().split(";")[0]]
 	cur = conn.cursor()
-
 	# Put all data
 	for cmd, file in zip(commands, data_files):
 		with open((DATA_DIR / file), "r") as data_file:
@@ -100,7 +122,7 @@ def convert_types(records):
 
 
 def load_data(cache):
-	if (DATA_DIR / "ds").exists():
+	if cache and (DATA_DIR / "ds").exists():
 		ds = datasets.load_from_disk(DATA_DIR / "ds")
 		return ds
 
@@ -114,31 +136,11 @@ def load_data(cache):
 		"Latitude_y", "Longitude_y"
 	])
 
-	# raname columns
-	name_mapping = {
-		"StationID": "station_id",
-		"Latitude_x": "latitude",
-		"Longitude_x": "longitude",
-		"AirNOW_O3": "airnow_ozon",
-		"CMAQ12KM_O3(ppb)": "cmaq_ozon",
-		"CMAQ12KM_NO2(ppb)": "cmaq_no2",
-		"CMAQ12KM_CO(ppm)": "cmaq_co",
-		"CMAQ_OC(ug/m3)": "cmaq_organic_carbon",
-		"PRSFC(Pa)": "pressure",
-		"PBL(m)": "pbl",
-		"TEMP2(K)": "temperature",
-		"WSPD10(m/s)": "wind_speed",
-		"WDIR10(degree)": "wind_direction",
-		"RGRND(W/m2)": "radiation",
-		"CFRAC": "cloud_fraction",
-		"month": "month",
-		"day": "day",
-		"hours": "hour",
-	}
-	ds = ds.rename_columns(name_mapping)
+	ds = ds.rename_columns(NAME_MAPPING)
 
 	if cache:
 		ds.save_to_disk(DATA_DIR / "ds")
+
 	return ds
 
 
@@ -150,6 +152,7 @@ def preprocess_data():
 
 	# Remove duplicates and convert data to int
 	stations = stations.drop_duplicates(subset="station_id")
+	records = records.drop_duplicates(subset=["station_id", "month", "day", "hour"])
 	records = convert_types(records)
 
 	# Save to csv

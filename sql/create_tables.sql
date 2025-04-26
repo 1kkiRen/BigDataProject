@@ -41,5 +41,5 @@ CREATE TABLE IF NOT EXISTS records
         (month = 2 AND day <= 29)
         )
 );
--- todo: OBFDIFNO
+-- todo: key on date + station
 COMMIT;
