@@ -1,0 +1,2 @@
+SELECT * FROM stations LIMIT 10;
+SELECT * FROM records LIMIT 10;
