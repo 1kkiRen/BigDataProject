@@ -1,16 +1,11 @@
 from pathlib import Path
-
-import datasets
 import psycopg2 as psql
 from datasets import load_dataset
-import numpy as np
-
 from pprint import pprint
 
 SQL_DIR = Path("sql")
 DATA_DIR = Path("data")
-if not DATA_DIR.exists():
-	DATA_DIR.mkdir()
+DATA_DIR.mkdir(exist_ok=True)
 
 # DB_HOST = hadoop-04.uni.innopolis.ru
 # DB_USER = team29
@@ -36,7 +31,7 @@ def connect():
 	password = "mypassword"
 
 	conn_string = (
-		f"host={DB_HOST}"
+		f"host={DB_HOST} "
 		f"port={DB_PORT} "
 		f"user={DB_USER} "
 		f"dbname={DB_NAME} "
@@ -44,11 +39,12 @@ def connect():
 	)
 
 	conn = psql.connect(conn_string)
+	print("Connected!")
 	return conn
 
 
 def create_tables(conn):
-	cur = conn.crsor()
+	cur = conn.cursor()
 	with open(SQL_DIR / "create_tables.sql") as file:
 		content = file.read()
 		cur.execute(content)
@@ -68,12 +64,13 @@ def import_data(conn):
 	# Read commands
 	with open(SQL_DIR / "import_data.sql") as file:
 		commands = file.readlines()
-	cur = conn.crsor()
+
+	cur = conn.cursor()
 
 	# Put all data
 	for cmd, file in zip(commands, data_files):
-		with open((DATA_DIR / file), "r") as depts:
-			cur.copy_expert(cmd, depts)
+		with open((DATA_DIR / file), "r") as data_file:
+			cur.copy_expert(cmd, data_file)
 
 	conn.commit()
 	print("Data imported!")
@@ -89,19 +86,9 @@ def test_db(conn):
 			pprint(cur.fetchall())
 
 
-def split_to_tables(ds, is_train):
-	stations = ds.select_columns(["StationID", "Latitude_x", "Longitude_x"]).unique("StationID")
-
-	records = ds.remove_columns(["Latitude_x", "Longitude_x"])
-	n_rows = len(records)
-	vals = np.full(n_rows, is_train)
-	records = records.add_column("split", vals)
-
-	return stations, records
-
-
 def preprocess_data():
 	ds = load_dataset("Geoweaver/ozone_training_data", split="train")
+	print("Loaded dataset")
 
 	# Remove useless columns
 	ds = ds.remove_columns([
@@ -112,32 +99,31 @@ def preprocess_data():
 
 	# raname columns
 	name_mapping = {
-		"StationID": "record_id",
-		"Latitude_x": "station_id",
-		"Longitude_x ": "split",
-		"AirNOW_O3": "month",
-		"CMAQ12KM_O3": "day",
-		"CMAQ12KM_NO2": "hour",
-		"CMAQ12KM_CO": "airnow_ozon",
-		"CMAQ_OC": "cmaq_ozon",
-		"PRSFC": "cmaq_no2",
-		"PBL": "cmaq_co",
-		"TEMP2": "pressure",
-		"WSPD10": "pbl",
-		"WDIR10": "temperature",
-		"RGRND": "wind_speed",
-		"CFRAC": "wind_direction",
-		"month": "radiation",
-		"day": "cloud_fraction",
+		"StationID": "station_id",
+		"Latitude_x": "latitude",
+		"Longitude_x": "longitude",
+		"AirNOW_O3": "airnow_ozon",
+		"CMAQ12KM_O3(ppb)": "cmaq_ozon",
+		"CMAQ12KM_NO2(ppb)": "cmaq_no2",
+		"CMAQ12KM_CO(ppm)": "cmaq_co",
+		"CMAQ_OC(ug/m3)": "cmaq_organic_carbon",
+		"PRSFC(Pa)": "pressure",
+		"PBL(m)": "pbl",
+		"TEMP2(K)": "temperature",
+		"WSPD10(m/s)": "wind_speed",
+		"WDIR10(degree)": "wind_direction",
+		"RGRND(W/m2)": "radiation",
+		"CFRAC": "cloud_fraction",
+		"month": "month",
+		"day": "day",
+		"hours": "hours",
 	}
-	ds = ds.rename_column(name_mapping)
+	ds = ds.rename_columns(name_mapping)
 
-	# Split data into several tables
-	train_stations, train_records = split_to_tables(ds["train"], True)
-	test_stations, test_records = split_to_tables(ds["test"], False)
+	stations = ds.select_columns(["station_id", "latitude", "longitude"]).to_pandas()
+	records = ds.remove_columns(["latitude", "longitude"]).to_pandas()
 
-	stations = datasets.concatenate_datasets([train_stations, test_stations]).uniquie("StationID")
-	records = datasets.concatenate_datasets([train_records, test_records])
+	stations = stations.drop_duplicates(subset="station_id")
 
 	# Save to csv
 	stations.to_csv(DATA_DIR / "stations.csv")
@@ -149,12 +135,12 @@ def main():
 	conn = connect()
 
 	try:
-		create_tables(conn)
 		preprocess_data()
-		import_data(conn)
-		test_db(conn)
+		# create_tables(conn)
+		# import_data(conn)
+		# test_db(conn)
 	except Exception as e:
-		print(e)
+		print("Error:", e)
 		conn.rollback()
 	finally:
 		conn.close()
