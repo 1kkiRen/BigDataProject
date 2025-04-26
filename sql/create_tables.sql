@@ -1,12 +1,12 @@
 START TRANSACTION;
 
-DROP TABLE stations CASCADE;
-DROP TABLE records CASCADE;
+DROP TABLE IF EXISTS stations CASCADE;
+DROP TABLE IF EXISTS records CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS stations
 (
-    id        BIGINT PRIMARY KEY,
+    id        VARCHAR(12) PRIMARY KEY,
     latitude  NUMERIC(7, 4),
     longitude NUMERIC(7, 4)
 );
@@ -14,25 +14,24 @@ CREATE TABLE IF NOT EXISTS stations
 CREATE TABLE IF NOT EXISTS records
 (
     record_id           SERIAL PRIMARY KEY,
-    station_id          BIGINT CONSTRAINT NOT NULL,
-    split               BOOLEAN,       -- Train (1) or Test(0)
+    station_id          VARCHAR(12) CONSTRAINT station_id_null NOT NULL,
 
-    month               INTEGER CONSTRAINT NOT NULL CHECK (month >= 1 AND month <= 12),
-    day                 INT CONSTRAINT NOT NULL,
-    hour                INT CONSTRAINT NOT NULL CHECK (hour >= 0 AND hour <= 23),
+    airnow_ozon         NUMERIC(7,4),
+    cmaq_ozon           NUMERIC(7,1),
+    cmaq_no2            NUMERIC(7,1),
+    cmaq_co             NUMERIC(7,1),
+    cmaq_organic_carbon NUMERIC(7,1),
+    pressure            NUMERIC(7,1),
+    pbl                 NUMERIC(6,1),
+    temperature         NUMERIC(7,1) CONSTRAINT temp_check CHECK (temperature > 0),
+    wind_speed          NUMERIC(4,1),
+    wind_direction      NUMERIC(4,1) CONSTRAINT dir_check CHECK (wind_direction >= 0 and wind_direction <= 360),
+    radiation           NUMERIC(5,1),
+    cloud_fraction      NUMERIC(2,1), -- Ranges from 0 to 1
 
-    airnow_ozon         SMALLINT,
-    cmaq_ozon           SMALLINT,
-    cmaq_no2            SMALLINT,
-    cmaq_co             SMALLINT,
-    cmaq_organic_carbon SMALLINT,
-    pressure            INTEGER,
-    pbl                 SMALLINT,
-    temperature         SMALLINT CONSTRAINT temp_check CHECK (temperature > 0),
-    wind_speed          SMALLINT,
-    wind_direction      SMALLINT CONSTRAINT dir_check CHECK (wind_direction >= 0 and wind_direction < 360),
-    radiation           SMALLINT,
-    cloud_fraction      NUMERIC(3, 2), -- Ranges from 0 to 1
+    month               INTEGER CONSTRAINT month_null NOT NULL CHECK (month >= 1 AND month <= 12),
+    day                 INTEGER CONSTRAINT day_null NOT NULL,
+    hour                INTEGER CONSTRAINT hours_null NOT NULL CHECK (hour >= 0 AND hour <= 23),
 
     FOREIGN KEY (station_id) REFERENCES stations (id),
 
@@ -42,5 +41,5 @@ CREATE TABLE IF NOT EXISTS records
         (month = 2 AND day <= 29)
         )
 );
-
+-- todo: OBFDIFNO
 COMMIT;

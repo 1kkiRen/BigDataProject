@@ -58,8 +58,8 @@ def import_data(conn):
 
 	# Check that files exist
 	for file in data_files:
-		if (DATA_DIR / file).exists():
-			raise FileNotFoundError(file)
+		if not (DATA_DIR / file).exists():
+			raise FileNotFoundError("Not found:", file)
 
 	# Read commands
 	with open(SQL_DIR / "import_data.sql") as file:
@@ -71,13 +71,14 @@ def import_data(conn):
 	for cmd, file in zip(commands, data_files):
 		with open((DATA_DIR / file), "r") as data_file:
 			cur.copy_expert(cmd, data_file)
+		print(file)
 
 	conn.commit()
 	print("Data imported!")
 
 
 def test_db(conn):
-	cur = conn.crsor()
+	cur = conn.cursor()
 	with open(SQL_DIR / "test_database.sql") as file:
 		commands = file.readlines()
 
@@ -116,7 +117,7 @@ def preprocess_data():
 		"CFRAC": "cloud_fraction",
 		"month": "month",
 		"day": "day",
-		"hours": "hours",
+		"hours": "hour",
 	}
 	ds = ds.rename_columns(name_mapping)
 
@@ -126,8 +127,8 @@ def preprocess_data():
 	stations = stations.drop_duplicates(subset="station_id")
 
 	# Save to csv
-	stations.to_csv(DATA_DIR / "stations.csv")
-	records.to_csv(DATA_DIR / "records.csv")
+	stations.to_csv(DATA_DIR / "stations.csv", index=False)
+	records.to_csv(DATA_DIR / "records.csv", index=False)
 	print("Data saved in csv!")
 
 
@@ -136,9 +137,9 @@ def main():
 
 	try:
 		preprocess_data()
-		# create_tables(conn)
-		# import_data(conn)
-		# test_db(conn)
+		create_tables(conn)
+		import_data(conn)
+		test_db(conn)
 	except Exception as e:
 		print("Error:", e)
 		conn.rollback()
