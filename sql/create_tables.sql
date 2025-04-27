@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS records
     record_id           SERIAL PRIMARY KEY,
     station_id          VARCHAR(12) CONSTRAINT station_id_null NOT NULL,
 
-    airnow_ozon         SMALLINT,
-    cmaq_ozon           SMALLINT,
+    airnow_ozone        SMALLINT,
+    cmaq_ozone          SMALLINT,
     cmaq_no2            SMALLINT,
     cmaq_co             SMALLINT,
     cmaq_organic_carbon SMALLINT,

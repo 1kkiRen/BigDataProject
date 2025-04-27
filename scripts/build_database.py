@@ -1,7 +1,7 @@
 from pathlib import Path
 
+import pandas as pd
 import psycopg2 as psql
-import datasets
 from pprint import pprint
 
 SQL_DIR = Path("sql")
@@ -22,8 +22,8 @@ NAME_MAPPING = {
 	"StationID": "station_id",
 	"Latitude_x": "latitude",
 	"Longitude_x": "longitude",
-	"AirNOW_O3": "airnow_ozon",
-	"CMAQ12KM_O3(ppb)": "cmaq_ozon",
+	"AirNOW_O3": "airnow_ozone",
+	"CMAQ12KM_O3(ppb)": "cmaq_ozone",
 	"CMAQ12KM_NO2(ppb)": "cmaq_no2",
 	"CMAQ12KM_CO(ppm)": "cmaq_co",
 	"CMAQ_OC(ug/m3)": "cmaq_organic_carbon",
@@ -107,7 +107,7 @@ def test_db(conn):
 
 def convert_types(records):
 	columns_type_swap = [
-		"airnow_ozon", "cmaq_ozon", "cmaq_no2", "cmaq_co", "cmaq_organic_carbon",
+		"airnow_ozone", "cmaq_ozone", "cmaq_no2", "cmaq_co", "cmaq_organic_carbon",
 		"pressure", "pbl", "temperature", "wind_speed", "wind_direction", "radiation",
 	]
 
@@ -116,34 +116,25 @@ def convert_types(records):
 	return records
 
 
-def load_data(cache):
-	if cache and (DATA_DIR / "ds").exists():
-		ds = datasets.load_from_disk(DATA_DIR / "ds")
-		return ds
+def load_data():
+	df = pd.read_csv(DATA_DIR / "training_data.csv")
 
-	ds = datasets.load_dataset("Geoweaver/ozone_training_data", split="train")
-	print("Loaded dataset from HF")
-
-	# Remove useless columns
-	ds = ds.remove_columns([
+	df.drop(columns=[
 		"Lat_airnow", "Lon_airnow",
 		"Lat_cmaq", "Lon_cmaq",
 		"Latitude_y", "Longitude_y"
-	])
+	], inplace=True)
 
-	ds = ds.rename_columns(NAME_MAPPING)
-
-	if cache:
-		ds.save_to_disk(DATA_DIR / "ds")
-
-	return ds
+	df.rename(columns=NAME_MAPPING, inplace=True)
+	return df
 
 
 def preprocess_data():
-	ds = load_data(cache=True)
+	ds = load_data()
+	print("Load dataset!")
 
-	stations = ds.select_columns(["station_id", "latitude", "longitude"]).to_pandas()
-	records = ds.remove_columns(["latitude", "longitude"]).to_pandas()
+	stations = ds[["station_id", "latitude", "longitude"]]
+	records = ds[ds.columns[~ds.columns.isin(["latitude", "longitude"])]]
 
 	# Remove duplicates and convert data to int
 	stations = stations.drop_duplicates(subset="station_id")
