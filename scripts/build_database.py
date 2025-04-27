@@ -8,13 +8,13 @@ SQL_DIR = Path("sql")
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
 
-# DB_HOST = hadoop-04.uni.innopolis.ru
-# DB_USER = team29
-# DB_NAME = team29_projectdb
+DB_HOST = "hadoop-04.uni.innopolis.ru"
+DB_USER = "team29"
+DB_NAME = "team29_projectdb"
 
-DB_HOST = "localhost"
-DB_USER = "myuser"
-DB_NAME = "mydatabase"
+# DB_HOST = "localhost"
+# DB_USER = "myuser"
+# DB_NAME = "mydatabase"
 
 DB_PORT = 5432
 
@@ -44,18 +44,13 @@ NAME_MAPPING = {
 
 def connect():
 	"""Establish a database connection."""
-	#TODO: file with password
-	# file = os.path.join("secrets", ".psql.pass")
-	# with open(file, "r") as file:
-	# 	password = file.read().rstrip()
-
-	password = "mypassword"
+	file = Path("secrets") / ".psql.pass"
+	with open(file, "r") as file:
+		password = file.read().rstrip()
 
 	conn_string = (
-		f"host={DB_HOST} "
-		f"port={DB_PORT} "
-		f"user={DB_USER} "
-		f"dbname={DB_NAME} "
+		f"host={DB_HOST} port={DB_PORT} "
+		f"dbname={DB_NAME} user={DB_USER} "
 		f"password={password}"
 	)
 
@@ -81,7 +76,7 @@ def create_tables(conn):
 def import_data(conn):
 	data_files = ["stations.csv", "records.csv"]
 
-	# Check that files exist
+	# Check files exist
 	for file in data_files:
 		if not (DATA_DIR / file).exists():
 			raise FileNotFoundError("Not found:", file)
