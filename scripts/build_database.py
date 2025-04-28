@@ -106,6 +106,9 @@ def test_db(conn):
 
 
 def convert_types(records):
+	"""
+	Some columns defined as FLOAT store only integer values. Changing data types to reduce table size
+	"""
 	columns_type_swap = [
 		"airnow_ozone", "cmaq_ozone", "cmaq_no2", "cmaq_co", "cmaq_organic_carbon",
 		"pressure", "pbl", "temperature", "wind_speed", "wind_direction", "radiation",
@@ -117,6 +120,7 @@ def convert_types(records):
 
 
 def load_data():
+	# Download dataset from HF: https://huggingface.co/datasets/Geoweaver/ozone_training_data/tree/main
 	df = pd.read_csv(DATA_DIR / "training_data.csv")
 
 	df.drop(columns=[
@@ -131,10 +135,10 @@ def load_data():
 
 def preprocess_data():
 	ds = load_data()
-	print("Load dataset!")
+	print("Dataset Prepared!")
 
 	stations = ds[["station_id", "latitude", "longitude"]]
-	records = ds[ds.columns[~ds.columns.isin(["latitude", "longitude"])]]
+	records = ds.drop(columns=["latitude", "longitude"])
 
 	# Remove duplicates and convert data to int
 	stations = stations.drop_duplicates(subset="station_id")

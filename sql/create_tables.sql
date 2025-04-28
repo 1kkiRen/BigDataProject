@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS records
         (month IN (1, 3, 5, 7, 8, 10, 12) AND day <= 31) OR
         (month IN (4, 6, 9, 11) AND day <= 30) OR
         (month = 2 AND day <= 29)
-        )
+        ),
+
+    CONSTRAINT unique_record UNIQUE (station_id, month, day, hour)
 );
--- todo: key on date + station
 COMMIT;
