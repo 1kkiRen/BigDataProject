@@ -175,7 +175,7 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
+	train = train.persist(StorageLevel.MEMORY_AND_DISK)
 	test = test.persist(StorageLevel.MEMORY_ONLY)
 	status("Repartition train/test", True)
 
