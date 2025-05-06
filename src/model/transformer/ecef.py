@@ -34,7 +34,7 @@ class ECEFTransformer(Transformer, DefaultParamsReadable, DefaultParamsWritable)
 	)
 
 	@keyword_only
-	def __init__(self, outpuCol="ecef", latitudeCol="latitude", longitudeCol="longitude", heightCol=None):
+	def __init__(self, outputCol="ecef", latitudeCol="latitude", longitudeCol="longitude", heightCol=None):
 		super().__init__()
 		self._setDefault(outpuCol="ecef", latitudeCol="latitude", longitudeCol="longitude", heightCol=None)
 		kwargs = self._input_kwargs
