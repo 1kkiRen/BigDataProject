@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import Dict, Tuple, Any, List
 
 import pandas as pd
@@ -8,6 +10,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator, Evaluator
 from pyspark.ml.tuning import CrossValidator
 from pyspark.sql import SparkSession, DataFrame
 
+sys.path.append(os.getcwd())
 from src.model.classifier.lr import prepare_lr
 from src.model.classifier.mlp import prepare_mlp
 from src.model.classifier.nb import prepare_nb
@@ -31,10 +34,10 @@ def create_session() -> SparkSession:
 
 	conf = (
 		SparkConf()
-		.setAppName(f"{team} - spark ML")
+		.setAppName(f"team{team} - spark ML")
+		.setMaster("yarn")
 		.set("spark.executor.memory", "4g")
 		.set("spark.driver.memory", "4g")
-		# .setMaster("yarn")
 	)
 
 	spark = (
@@ -79,11 +82,11 @@ def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
 	svc, svc_grid = prepare_svc()
 
 	models = {
+		"lr": (lr, lr_grid),
+		"nb": (nb, nb_grid),
 		"rf": (rf, rf_grid),
 		"mlp": (mlp, mlp_grid),
 		"svc": (svc, svc_grid),
-		"nb": (nb, nb_grid),
-		"lr": (lr, lr_grid),
 	}
 
 	return models
