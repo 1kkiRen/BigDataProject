@@ -26,7 +26,7 @@ NAME_MAPPING = {
 	"CMAQ12KM_O3(ppb)": "cmaq_ozone",
 	"CMAQ12KM_NO2(ppb)": "cmaq_no2",
 	"CMAQ12KM_CO(ppm)": "cmaq_co",
-	"CMAQ_OC(ug/m3)": "cmaq_organic_carbon",
+	"CMAQ_OC(ug/m3)": "cmaq_oc",
 	"PRSFC(Pa)": "pressure",
 	"PBL(m)": "pbl",
 	"TEMP2(K)": "temperature",
@@ -39,8 +39,6 @@ NAME_MAPPING = {
 	"hours": "hour",
 }
 
-
-# TODO: fill None cells
 
 def connect():
 	"""Establish a database connection."""
@@ -105,20 +103,6 @@ def test_db(conn):
 			pprint(cur.fetchall())
 
 
-def convert_types(records):
-	"""
-	Some columns defined as FLOAT store only integer values. Changing data types to reduce table size
-	"""
-	columns_type_swap = [
-		"airnow_ozone", "cmaq_ozone", "cmaq_no2", "cmaq_co", "cmaq_organic_carbon",
-		"pressure", "pbl", "temperature", "wind_speed", "wind_direction", "radiation",
-	]
-
-	for col in columns_type_swap:
-		records[col] = records[col].astype(int)
-	return records
-
-
 def load_data():
 	# Download dataset from HF: https://huggingface.co/datasets/Geoweaver/ozone_training_data/tree/main
 	df = pd.read_csv(DATA_DIR / "training_data.csv")
@@ -143,7 +127,6 @@ def preprocess_data():
 	# Remove duplicates and convert data to int
 	stations = stations.drop_duplicates(subset="station_id")
 	records = records.drop_duplicates(subset=["station_id", "month", "day", "hour"])
-	records = convert_types(records)
 
 	# Save to csv
 	stations.to_csv(DATA_DIR / "stations.csv", index=False)
