@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, List
 
 import pandas as pd
 from pyspark import SparkConf, StorageLevel
@@ -112,6 +112,37 @@ def train_model(model, grid, train) -> Model:
 	return model
 
 
+def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
+	summary = []
+	for name, (model, grid) in models.items():
+		# Train model
+		model = train_model(model, grid, train)
+		status(f"Train {name}", True)
+
+		# Save model
+		model.write().overwrite().save(f"project/models/model_{name}")
+		status(f"Save {name}", True)
+
+		# Predict with the model
+		predictions = model.transform(test)
+		status("Predict test labels", True)
+
+		# Save predictions
+		predictions = predictions.select("label", "prediction")
+		predictions.coalesce(1).write.mode("overwrite").csv(f"project/output/model_{name}_predictions.csv")
+		status("Save predictions", True)
+
+		# Evaluate the model
+		row = {"model": str(model)}
+		for m, e in evaluators.items():
+			score = e.evaluate(predictions)
+			row[m] = score
+			status(f"Evaluate {m}: {score}", True)
+		summary.append(row)
+
+	return summary
+
+
 def main():
 	# Create session
 	spark = create_session()
@@ -157,35 +188,11 @@ def main():
 	evaluators = prepare_evaluators()
 	models = prepare_models()
 
-	summary = []
-	for name, (model, grid) in models.items():
-		# Train model
-		model = train_model(model, grid, train)
-		status(f"Train {name}", True)
-
-		# Save model
-		model.write().overwite().save(f"project/models/model_{name}")
-		status(f"Save {name}", True)
-
-		# Predict with the model
-		predictions = model.transform(test)
-		status("Predict test labels", True)
-
-		# Save predictions
-		predictions = predictions.select("label", "prediction")
-		predictions.coalesce(1).write.mode("overwrite").csv(f"project/output/model_{name}_predictions.csv")
-		status("Save predictions", True)
-
-		# Evaluate the model
-		row = {"model": str(model)}
-		for m, e in evaluators.items():
-			score = e.evaluate(predictions)
-			row[m] = score
-			status(f"Evaluate {m}: {score}", True)
-		summary.append(row)
-
+	summary = train_models(evaluators, models, train, test)
 	pd.DataFrame(summary).to_csv("project/output/evaluation.csv", index=False)
-	status("Save evaluation", True)
+	status("Save summary", True)
+
+	status("Bye!", True)
 
 
 if __name__ == "__main__":
