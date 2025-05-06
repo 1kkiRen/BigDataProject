@@ -11,7 +11,7 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS stations;
 DROP TABLE IF EXISTS records;
 
--- Create stations table
+-- Create stations table (no partitioning needed)
 CREATE EXTERNAL TABLE stations (
     id STRING,
     latitude DECIMAL(7,4),
@@ -20,7 +20,7 @@ CREATE EXTERNAL TABLE stations (
 STORED AS PARQUET
 LOCATION 'project/warehouse/stations';
 
--- Create records table
+-- Create records table with partitioning and bucketing
 CREATE EXTERNAL TABLE records (
     record_id INT,
     station_id STRING,
@@ -35,13 +35,13 @@ CREATE EXTERNAL TABLE records (
     wind_speed DECIMAL(4,1),
     wind_direction DECIMAL(4,1),
     radiation DECIMAL(5,1),
-    cloud_fraction DECIMAL(2,1),
-    month INT,
-    day INT,
-    hour INT
+    cloud_fraction DECIMAL(2,1)
 )
+PARTITIONED BY (month INT, day INT, hour INT)
+CLUSTERED BY (station_id) INTO 8 BUCKETS
 STORED AS PARQUET
-LOCATION 'project/warehouse/records';
+LOCATION 'project/warehouse/records'
+TBLPROPERTIES ('parquet.compression'='SNAPPY');
 
 -- Check tables
 SHOW TABLES;
