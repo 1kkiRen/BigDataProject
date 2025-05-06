@@ -40,8 +40,7 @@ CREATE EXTERNAL TABLE records (
 PARTITIONED BY (month INT, day INT, hour INT)
 CLUSTERED BY (station_id) INTO 8 BUCKETS
 STORED AS PARQUET
-LOCATION 'project/warehouse/records'
-TBLPROPERTIES ('parquet.compression'='SNAPPY');
+LOCATION 'project/warehouse/records';
 
 -- Check tables
 SHOW TABLES;
