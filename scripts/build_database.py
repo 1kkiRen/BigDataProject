@@ -138,7 +138,7 @@ def main():
 	conn = connect()
 
 	try:
-		preprocess_data()
+		# preprocess_data()
 		create_tables(conn)
 		import_data(conn)
 		test_db(conn)
