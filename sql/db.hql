@@ -10,6 +10,7 @@ USE team29_projectdb;
 -- Drop tables if they exist
 DROP TABLE IF EXISTS stations;
 DROP TABLE IF EXISTS records;
+DROP TABLE IF EXISTS records_staging;
 
 -- Create stations table (no partitioning needed)
 CREATE EXTERNAL TABLE stations (
@@ -20,7 +21,30 @@ CREATE EXTERNAL TABLE stations (
 STORED AS PARQUET
 LOCATION 'project/warehouse/stations';
 
--- Create records table with partitioning and bucketing
+-- Create a staging table for records (no partitioning)
+CREATE EXTERNAL TABLE records_staging (
+    record_id INT,
+    station_id STRING,
+    airnow_ozone DECIMAL(4,1),
+    cmaq_ozone DECIMAL(4,1),
+    cmaq_no2 DECIMAL(4,1),
+    cmaq_co DECIMAL(6,1),
+    cmaq_oc DECIMAL(5,1),
+    pressure DECIMAL(7,1),
+    pbl DECIMAL(5,1),
+    temperature DECIMAL(4,1),
+    wind_speed DECIMAL(4,1),
+    wind_direction DECIMAL(4,1),
+    radiation DECIMAL(5,1),
+    cloud_fraction DECIMAL(2,1),
+    month INT,
+    day INT,
+    hour INT
+)
+STORED AS PARQUET
+LOCATION 'project/warehouse/records';
+
+-- Create the optimized records table with partitioning and bucketing
 CREATE EXTERNAL TABLE records (
     record_id INT,
     station_id STRING,
@@ -40,8 +64,22 @@ CREATE EXTERNAL TABLE records (
 PARTITIONED BY (month INT, day INT, hour INT)
 CLUSTERED BY (station_id) INTO 8 BUCKETS
 STORED AS PARQUET
-LOCATION 'project/warehouse/records'
+LOCATION 'project/warehouse/records_optimized'
 TBLPROPERTIES ('parquet.compression'='SNAPPY');
+
+-- Enable dynamic partitioning
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+-- Insert data from staging to optimized table
+INSERT OVERWRITE TABLE records PARTITION (month, day, hour)
+SELECT
+    record_id, station_id, airnow_ozone, cmaq_ozone, cmaq_no2, cmaq_co, cmaq_oc,
+    pressure, pbl, temperature, wind_speed, wind_direction, radiation, cloud_fraction,
+    month, day, hour
+FROM records_staging;
+
+DROP TABLE IF EXISTS records_staging;
 
 -- Check tables
 SHOW TABLES;
