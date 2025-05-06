@@ -9,7 +9,7 @@ class RadiationLabeler(Transformer, HasInputCol, HasOutputCol, DefaultParamsRead
 	@keyword_only
 	def __init__(self, inputCol=None, outputCol=None):
 		super(RadiationLabeler, self).__init__()
-		self._setDefault(period=1.0)
+		self._setDefault()
 		kwargs = self._input_kwargs
 		self.setParams(**kwargs)
 
