@@ -127,7 +127,7 @@ def main():
 
 	# Create pipline
 	pipeline = Feature.pipeline()
-	status("Created feature extraction pipeline", True)
+	status("Create feature extraction pipeline", True)
 
 	# Fit pipeline
 	pipeline = pipeline.fit(train)
@@ -142,6 +142,11 @@ def main():
 	cols = ["features", "label"]
 	train = train.select(cols)
 	test = test.select(cols)
+
+	# Repartition train/test
+	train = train.repartition(1000)
+	test = test.repartition(1000)
+	status("Repartition train/test", True)
 
 	# Save train/test
 	train.write.mode("overwrite").json("project/data/train")
@@ -164,7 +169,7 @@ def main():
 
 		# Predict with the model
 		predictions = model.transform(test)
-		status("Predicted test labels", True)
+		status("Predict test labels", True)
 
 		# Save predictions
 		predictions = predictions.select("label", "prediction")
