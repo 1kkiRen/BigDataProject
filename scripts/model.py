@@ -72,18 +72,18 @@ def load_data(spark: SparkSession) -> DataFrame:
 
 
 def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
+	rf, rf_grid = prepare_rf()
 	nb, nb_grid = prepare_nb()
 	lr, lr_grid = prepare_lr()
-	rf, rf_grid = prepare_rf()
 	mlp, mlp_grid = prepare_mlp(16, 3)
 	svc, svc_grid = prepare_svc()
 
 	models = {
-		"nb": (nb, nb_grid),
-		"lr": (lr, lr_grid),
 		"rf": (rf, rf_grid),
 		"mlp": (mlp, mlp_grid),
 		"svc": (svc, svc_grid),
+		"nb": (nb, nb_grid),
+		"lr": (lr, lr_grid),
 	}
 
 	return models
@@ -175,7 +175,7 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.persist(StorageLevel.MEMORY_AND_DISK)
+	train = train.repartition(100).persist(StorageLevel.MEMORY_AND_DISK)
 	test = test.persist(StorageLevel.MEMORY_ONLY)
 	status("Repartition train/test", True)
 
