@@ -4,9 +4,9 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q6_results;
 CREATE EXTERNAL TABLE q6_results(
     month INT,
-    avg_temperature DECIMAL(4,1),
+    avg_pbl DECIMAL(5,1), -- Changed from avg_temperature
     avg_cmaq_ozone DECIMAL(4,1),
-    avg_wind_speed DECIMAL(4,1) -- Added average wind speed
+    avg_radiation DECIMAL(5,1)
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -18,11 +18,12 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q6_results
 SELECT
     month,
-    AVG(temperature) AS avg_temperature,
+    AVG(pbl) AS avg_pbl, -- Changed from temperature
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
-    AVG(wind_speed) AS avg_wind_speed
+    AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY month;
+GROUP BY month
+ORDER BY month;
 
 SELECT * FROM q6_results LIMIT 10;
 

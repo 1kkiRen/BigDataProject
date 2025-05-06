@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
     station_id STRING,
-    avg_airnow_ozone DECIMAL(4,1),
-    avg_wind_speed DECIMAL(4,1) -- Added average wind speed
+    avg_cmaq_ozone DECIMAL(4,1), -- Changed from avg_airnow_ozone
+    avg_radiation DECIMAL(5,1)
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -17,10 +17,11 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q3_results
 SELECT
     station_id,
-    AVG(airnow_ozone) AS avg_airnow_ozone,
-    AVG(wind_speed) AS avg_wind_speed -- Calculate average wind speed
+    AVG(cmaq_ozone) AS avg_cmaq_ozone, -- Changed from airnow_ozone
+    AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY station_id;
+GROUP BY station_id
+ORDER BY avg_cmaq_ozone DESC; -- Order by the new primary insight
 
 SELECT * FROM q3_results LIMIT 10;
 

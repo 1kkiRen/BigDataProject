@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS q4_results;
 CREATE EXTERNAL TABLE q4_results(
     hour INT,
     avg_temperature DECIMAL(4,1),
-    avg_wind_speed DECIMAL(4,1) -- Added average wind speed
+    avg_radiation DECIMAL(5,1) -- Changed from avg_wind_speed
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -18,9 +18,10 @@ INSERT INTO q4_results
 SELECT
     hour,
     AVG(temperature) AS avg_temperature,
-    AVG(wind_speed) AS avg_wind_speed
+    AVG(radiation) AS avg_radiation -- Changed from wind_speed
 FROM records
-GROUP BY hour;
+GROUP BY hour
+ORDER BY hour;
 
 SELECT * FROM q4_results LIMIT 10;
 
