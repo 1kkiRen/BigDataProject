@@ -9,7 +9,7 @@ def prepare_mlp(features: int, labels: int):
 		.addGrid(
 			mlp.layers,
 			[
-				[features, 16, 8, labels],
+				[features, 8, labels],
 				[features, 16, labels],
 				[features, 32, labels],
 			]
