@@ -19,7 +19,7 @@ FROM records
 GROUP BY station_id
 ORDER BY record_count DESC;
 
-SELECT * FROM q1_results;
+SELECT * FROM q1_results LIMIT 10;
 
 -- Export the results to HDFS directory as CSV
 INSERT OVERWRITE DIRECTORY 'project/output/q1'

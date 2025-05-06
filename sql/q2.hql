@@ -3,7 +3,7 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q2_results;
 CREATE EXTERNAL TABLE q2_results(
-    station_id STRING,
+    id STRING,
     latitude DECIMAL(7,4),
     longitude DECIMAL(7,4)
 )
@@ -15,11 +15,11 @@ LOCATION 'project/hive/warehouse/q2';
 SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q2_results
-SELECT id AS station_id, latitude, longitude
+SELECT id AS id, latitude, longitude
 FROM stations
-GROUP BY station_id;
+GROUP BY id;
 
-SELECT * FROM q2_results;
+SELECT * FROM q2_results LIMIT 10;
 
 -- Export the results to HDFS directory as CSV
 INSERT OVERWRITE DIRECTORY 'project/output/q2'
