@@ -41,7 +41,7 @@ class ECEFTransformer(Transformer, DefaultParamsReadable, DefaultParamsWritable)
 		self.setParams(**kwargs)
 
 	@keyword_only
-	def setParams(self, latitudeCol="latitude", longitudeCol="longitude", heightCol=None):
+	def setParams(self, outputCol="ecef", latitudeCol="latitude", longitudeCol="longitude", heightCol=None):
 		kwargs = self._input_kwargs
 		return self._set(**kwargs)
 
