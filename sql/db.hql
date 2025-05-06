@@ -77,7 +77,7 @@ SET hive.exec.max.dynamic.partitions.pernode=5000;
 SET hive.tez.container.size=4096;
 SET parquet.memory.min.allocation.size=2097152;
 SET hive.tez.auto.reducer.parallelism=true;
-SET parquet.block.size=134217728;88;
+SET parquet.block.size=134217728;
 
 -- Insert data from staging to optimized table
 INSERT OVERWRITE TABLE records PARTITION (month, day)
