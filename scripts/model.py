@@ -1,7 +1,7 @@
 from typing import Dict, Tuple, Any
 
 import pandas as pd
-from pyspark import SparkConf
+from pyspark import SparkConf, StorageLevel
 from pyspark.ml import Model
 from pyspark.ml.classification import Classifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator, Evaluator
@@ -32,8 +32,8 @@ def create_session() -> SparkSession:
 	conf = (
 		SparkConf()
 		.setAppName(f"{team} - spark ML")
-		.set("spark.executor.memory", "1g")
-		.set("spark.driver.memory", "1g")
+		.set("spark.executor.memory", "4g")
+		.set("spark.driver.memory", "4g")
 		# .setMaster("yarn")
 	)
 
@@ -144,8 +144,8 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.repartition(1000)
-	test = test.repartition(1000)
+	train = train.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
+	test = test.repartition(1000).persist(StorageLevel.MEMORY_ONLY)
 	status("Repartition train/test", True)
 
 	# Save train/test
