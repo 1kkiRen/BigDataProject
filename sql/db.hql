@@ -63,7 +63,7 @@ CREATE EXTERNAL TABLE records (
     hour INT
 )
 PARTITIONED BY (month INT, day INT)
-CLUSTERED BY (station_id) INTO 4 BUCKETS
+CLUSTERED BY (station_id) INTO 2 BUCKETS
 STORED AS PARQUET
 LOCATION 'project/warehouse/records_optimized'
 TBLPROPERTIES ('parquet.compression'='SNAPPY');
@@ -71,9 +71,10 @@ TBLPROPERTIES ('parquet.compression'='SNAPPY');
 -- Enable dynamic partitioning
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
-SET hive.exec.max.dynamic.partitions=500;
-SET hive.exec.max.dynamic.partitions.pernode=500;
+SET hive.exec.max.dynamic.partitions=400;
+SET hive.exec.max.dynamic.partitions.pernode=400;
 SET parquet.memory.min.chunk.size=524288;
+SET hive.tez.container.size=4096;
 
 -- Insert data from staging to optimized table
 INSERT OVERWRITE TABLE records PARTITION (month, day)
