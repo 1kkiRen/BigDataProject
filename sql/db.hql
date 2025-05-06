@@ -59,9 +59,10 @@ CREATE EXTERNAL TABLE records (
     wind_speed DECIMAL(4,1),
     wind_direction DECIMAL(4,1),
     radiation DECIMAL(5,1),
-    cloud_fraction DECIMAL(2,1)
+    cloud_fraction DECIMAL(2,1),
+    hour INT
 )
-PARTITIONED BY (month INT, day INT, hour INT)
+PARTITIONED BY (month INT, day INT)
 CLUSTERED BY (station_id) INTO 8 BUCKETS
 STORED AS PARQUET
 LOCATION 'project/warehouse/records_optimized'
@@ -70,9 +71,11 @@ TBLPROPERTIES ('parquet.compression'='SNAPPY');
 -- Enable dynamic partitioning
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.exec.max.dynamic.partitions=500;
+SET hive.exec.max.dynamic.partitions.pernode=500;
 
 -- Insert data from staging to optimized table
-INSERT OVERWRITE TABLE records PARTITION (month, day, hour)
+INSERT OVERWRITE TABLE records PARTITION (month, day)
 SELECT
     record_id, station_id, airnow_ozone, cmaq_ozone, cmaq_no2, cmaq_co, cmaq_oc,
     pressure, pbl, temperature, wind_speed, wind_direction, radiation, cloud_fraction,
