@@ -17,8 +17,7 @@ INSERT INTO q1_results
 SELECT station_id, COUNT(*) AS record_count
 FROM records
 GROUP BY station_id
-ORDER BY record_count DESC
-LIMIT 10;
+ORDER BY record_count DESC;
 
 SELECT * FROM q1_results;
 
