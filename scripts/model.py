@@ -32,9 +32,9 @@ def create_session() -> SparkSession:
 	conf = (
 		SparkConf()
 		.setAppName(f"{team} - spark ML")
+		.set("spark.executor.memory", "1g")
+		.set("spark.driver.memory", "1g")
 		# .setMaster("yarn")
-		# .set("spark.executor.memory", "1g")
-		# .set("spark.driver.memory", "1g")
 	)
 
 	spark = (
