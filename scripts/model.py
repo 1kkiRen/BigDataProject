@@ -47,18 +47,19 @@ def create_session() -> SparkSession:
 
 
 def load_data(spark: SparkSession) -> DataFrame:
+	# TODO: replace with Hive
 	records_df = (
 		spark.read.format("csv")
 		.option("header", "true")
 		.option("inferSchema", "true")
-		.load("records.csv")
+		.load("data/records.csv")
 	)
 
 	stations_df = (
 		spark.read.format("csv")
 		.option("header", "true")
 		.option("inferSchema", "true")
-		.load("stations.csv")
+		.load("data/stations.csv")
 	)
 
 	df = records_df.join(
