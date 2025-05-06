@@ -144,13 +144,13 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
-	test = test.repartition(1000).persist(StorageLevel.MEMORY_ONLY)
+	train = train.persist(StorageLevel.MEMORY_AND_DISK)
+	test = test.persist(StorageLevel.MEMORY_ONLY)
 	status("Repartition train/test", True)
 
-	# Save train/test
-	train.write.mode("overwrite").json("project/data/train")
-	test.write.mode("overwrite").json("project/data/test")
+	# TODO: Save train/test
+	# train.write.mode("overwrite").json("project/data/train")
+	# test.write.mode("overwrite").json("project/data/test")
 	status("Save train/test", True)
 
 	# Prepare evaluators and models
