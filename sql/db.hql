@@ -71,9 +71,13 @@ TBLPROPERTIES ('parquet.compression'='SNAPPY');
 -- Enable dynamic partitioning
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
-SET hive.exec.max.dynamic.partitions=500;
-SET hive.exec.max.dynamic.partitions.pernode=500;
-SET parquet.memory.min.chunk.size=524288;
+SET hive.enforce.bucketing=true;
+SET hive.exec.max.dynamic.partitions=5000;
+SET hive.exec.max.dynamic.partitions.pernode=5000;
+SET hive.tez.container.size=4096;
+SET parquet.memory.min.allocation.size=2097152;
+SET hive.tez.auto.reducer.parallelism=true;
+SET parquet.block.size=134217728;88;
 
 -- Insert data from staging to optimized table
 INSERT OVERWRITE TABLE records PARTITION (month, day)
