@@ -164,7 +164,7 @@ def main():
 		status(f"Train {name}", True)
 
 		# Save model
-		model.write().mode("overwrite").save(f"project/models/model_{name}")
+		model.write().overwite().save(f"project/models/model_{name}")
 		status(f"Save {name}", True)
 
 		# Predict with the model
