@@ -57,8 +57,9 @@ class Feature:
 			for (lat, lon, out) in Feature.Geo
 		]
 		geo_features = [
-			feature
+			f"{feature}_{postfix}"
 			for _, _, feature in Feature.Geo
+			for postfix in ["x", "y", "z"]
 		]
 
 		features_assembler = VectorAssembler(
