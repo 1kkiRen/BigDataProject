@@ -53,7 +53,7 @@ class Feature:
 		]
 
 		geo_transformers = [
-			ECEFTransformer(latitudeCol=lon, longitudeCol=lat, outpuCol=out)
+			ECEFTransformer(latitudeCol=lon, longitudeCol=lat, outputCol=out)
 			for (lat, lon, out) in Feature.Geo
 		]
 		geo_features = [
