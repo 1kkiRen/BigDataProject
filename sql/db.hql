@@ -63,7 +63,7 @@ CREATE EXTERNAL TABLE records (
     hour INT
 )
 PARTITIONED BY (month INT, day INT)
-CLUSTERED BY (station_id) INTO 8 BUCKETS
+CLUSTERED BY (station_id) INTO 4 BUCKETS
 STORED AS PARQUET
 LOCATION 'project/warehouse/records_optimized'
 TBLPROPERTIES ('parquet.compression'='SNAPPY');
