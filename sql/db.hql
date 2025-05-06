@@ -73,6 +73,7 @@ SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
 SET hive.exec.max.dynamic.partitions=500;
 SET hive.exec.max.dynamic.partitions.pernode=500;
+SET parquet.memory.min.chunk.size=524288;
 
 -- Insert data from staging to optimized table
 INSERT OVERWRITE TABLE records PARTITION (month, day)
