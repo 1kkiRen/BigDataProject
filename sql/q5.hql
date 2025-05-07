@@ -18,7 +18,7 @@ INSERT INTO q5_results
 SELECT
     station_id,
     AVG(pbl) AS avg_pbl,
-    AVG(radiation) AS avg_radiation
+    AVG(radiation) / 2 AS avg_radiation
 FROM records
 GROUP BY station_id;
 

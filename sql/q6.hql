@@ -20,7 +20,7 @@ SELECT
     day,
     AVG(pbl) AS avg_pbl,
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
-    AVG(radiation) AS avg_radiation
+    AVG(radiation) / 2 AS avg_radiation
 FROM records
 GROUP BY day;
 

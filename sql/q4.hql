@@ -18,7 +18,7 @@ INSERT INTO q4_results
 SELECT
     hour,
     AVG(temperature) AS avg_temperature,
-    AVG(radiation) AS avg_radiation
+    AVG(radiation) / 2 AS avg_radiation
 FROM records
 GROUP BY hour;
 
