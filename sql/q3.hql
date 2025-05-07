@@ -14,12 +14,11 @@ LOCATION 'project/hive/warehouse/q3';
 SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q3_results
-SELECT AVG(latitude) as latitude, AVG(radiation) as avg_radiation
-FROM records
-JOIN stations ON records.station_id = stations.id
-GROUP BY stations.id
-ORDER BY latitude;
-
+SELECT s.latitude, AVG(r.radiation) AS avg_radiation
+FROM records r
+JOIN stations s ON r.station_id = s.id
+GROUP BY s.latitude
+ORDER BY s.latitude;
 
 SELECT * FROM q3_results LIMIT 10;
 
