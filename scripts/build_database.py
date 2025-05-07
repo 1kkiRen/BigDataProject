@@ -51,11 +51,6 @@ DB_HOST = "hadoop-04.uni.innopolis.ru"
 DB_USER = "team29"
 DB_NAME = "team29_projectdb"
 
-DB_HOST = "localhost"
-DB_USER = "myuser"
-DB_NAME = "postgres"
-DB_PORT = 5432
-
 NAME_MAPPING = {
     "StationID": "station_id",
     "Latitude_x": "latitude",
@@ -91,7 +86,6 @@ def connect():
         print("Secret file .psql.pass not found!")
         password = input("Enter password:\n>")
 
-    password = "mypassword"
     conn_string = (
         f"host={DB_HOST} port={DB_PORT} "
         f"dbname={DB_NAME} user={DB_USER} "

@@ -10,7 +10,6 @@ fi
 
 password=$(head -n 1 secrets/.psql.pass)
 
-#TODO: try --direct
 # Send data to HDFS via scoop
 sqoop import-all-tables \
   --connect jdbc:postgresql://hadoop-04.uni.innopolis.ru/team29_projectdb \
@@ -19,7 +18,6 @@ sqoop import-all-tables \
   --compression-codec=snappy \
   --compress --as-parquetfile \
   --warehouse-dir=project/warehouse \
-  --direct \
   --m 1
 
 echo "Stage 1 done!"
