@@ -46,7 +46,7 @@ def create_session() -> SparkSession:
 		.config(conf=conf)
 		.getOrCreate()
 	)
-	spark.sparkContext.setLogLevel("ERROR")
+	spark.sparkContext.setLogLevel("WARN")
 
 	return spark
 
@@ -104,11 +104,13 @@ def prepare_evaluators() -> Dict[str, Evaluator]:
 
 
 def train_model(model, grid, train) -> Model:
+	cpu_count = os.cpu_count()
 	cv = CrossValidator(
 		estimator=model,
 		estimatorParamMaps=grid,
 		evaluator=MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="f1"),
 		numFolds=3,
+		parallelism=cpu_count,
 	)
 
 	model = cv.fit(train)
@@ -140,6 +142,7 @@ def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
 			row[m] = score
 			status(f"Evaluate {m}: {score}", True)
 		summary.append(row)
+		print(row)
 
 		# Save predictions
 		predictions = predictions.withColumn("prediction", F.col("prediction").cast("integer"))
