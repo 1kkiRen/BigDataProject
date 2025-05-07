@@ -50,7 +50,7 @@ def connect():
 
     try:
         conn = psql.connect(conn_string)
-    except psql.Error as err    :
+    except psql.Error as err:
         print(err)
         sys.exit()
 
@@ -59,6 +59,10 @@ def connect():
 
 
 def create_tables(conn):
+    """
+    Calls SQL commands to create tables.
+    :param conn: Connection to database.
+    """
     cur = conn.cursor()
     with open(SQL_DIR / "create_tables.sql", encoding="utf-8") as file:
         cur.execute(file.read())
@@ -68,6 +72,10 @@ def create_tables(conn):
 
 
 def import_data(conn):
+    """
+    Calls SQL commands to import data into Postgres.
+    :param conn: Connection to database.
+    """
     data_files = ["stations.csv", "records.csv"]
 
     # Check files exist
@@ -90,16 +98,26 @@ def import_data(conn):
 
 
 def test_db(conn):
+    """
+    Test SQL queries completed successfully.
+    :param conn: Connection to database.
+    """
     cur = conn.cursor()
     with open(SQL_DIR / "test_database.sql", encoding="utf-8") as file:
         commands = file.readlines()
 
         for command in commands:
-            cur.execute(command)
-            pprint(cur.fetchall())
+            result = pd.read_sql(command, conn)
+            print(result)
+            # cur.execute(command)
+            # pprint(cur.fetchall())
 
 
-def load_data():
+def load_data() -> pd.DataFrame:
+    """
+    Loads dataset from CSV file and drops redundant columns.
+    :return: DataFrame of whole dataset.
+    """
     # Downloaded dataset from HF: https://huggingface.co/datasets/Geoweaver/ozone_training_data
     dataset = pd.read_csv(DATA_DIR / "training_data.csv")
 
@@ -113,14 +131,19 @@ def load_data():
     return dataset
 
 
-def check_on(records):
+def check_on(records) -> pd.DataFrame:
+    """
+    Check that column values are following set constraints.
+    :param records: DataFrame of records.
+    :return: processed DataFrame of records.
+    """
+
     query_parts = []  # List of query conditions
 
     def add_query_condition(column_name, condition_string):
         if column_name not in records.columns:
             print(f"Warning: Column '{column_name}' not in dataset. Skipping this condition.")
             return
-
         query_parts.append(condition_string)
 
     # Add conditions for each constraint
@@ -131,6 +154,7 @@ def check_on(records):
     add_query_condition("cmaq_oc", "cmaq_oc >= 0")
     add_query_condition("pressure", "pressure > 0")
     add_query_condition("pbl", "pbl >= 0")
+    # Temperature presented in Kelvins
     add_query_condition("temperature", "temperature > 0")
     add_query_condition("wind_speed", "wind_speed >= 0")
 
@@ -144,7 +168,22 @@ def check_on(records):
     return records
 
 
-def preprocess_data():
+def preprocess_data(force: bool):
+    """
+    Preprocess the dataset before SQL ingestion.
+    Rename columns for better readability.
+    Drop redundant, duplicated and not following constraints columns.
+    Split data and saves into two CSV files.
+    :param force: Whether to overwrite existing CSV files.
+    """
+
+    # Check if preprocessed files are already exists.
+    # force == True will preprocess data in any case.
+    if not force and (DATA_DIR / "stations.csv").exists() and (DATA_DIR / "records.csv").exists():
+        print("Data already processed!")
+        print("Use processed files")
+        return
+
     dataset = load_data()
     print("Dataset Prepared!")
 
@@ -168,9 +207,10 @@ def main():
     conn = connect()
 
     try:
-        preprocess_data()
+        preprocess_data(False)
         create_tables(conn)
         import_data(conn)
+        test_db(conn)
     except Exception as err:
         print("Error:", err)
         conn.rollback()
