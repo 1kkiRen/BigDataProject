@@ -17,7 +17,7 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q4_results
 SELECT
     hour,
-    AVG(temperature) AS avg_temperature,
+    AVG(temperature) - 274 AS avg_temperature,
     AVG(radiation) / 2 AS avg_radiation
 FROM records
 GROUP BY hour;
