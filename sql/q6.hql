@@ -3,8 +3,8 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q6_results;
 CREATE EXTERNAL TABLE q6_results(
-    month INT,
-    avg_pbl DECIMAL(5,1), -- Changed from avg_temperature
+    day INT,
+    avg_pbl DECIMAL(5,1),
     avg_cmaq_ozone DECIMAL(4,1),
     avg_radiation DECIMAL(5,1)
 )
@@ -17,8 +17,8 @@ SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q6_results
 SELECT
-    month,
-    AVG(pbl) AS avg_pbl, -- Changed from temperature
+    day,
+    AVG(pbl) AS avg_pbl,
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
     AVG(radiation) AS avg_radiation
 FROM records

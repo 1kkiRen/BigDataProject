@@ -4,7 +4,7 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q5_results;
 CREATE EXTERNAL TABLE q5_results(
     station_id STRING,
-    avg_pbl DECIMAL(5,1), -- Changed from avg_cmaq_co
+    avg_pbl DECIMAL(5,1),
     avg_radiation DECIMAL(5,1)
 )
 ROW FORMAT DELIMITED
@@ -17,11 +17,10 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q5_results
 SELECT
     station_id,
-    AVG(pbl) AS avg_pbl, -- Changed from cmaq_co
+    AVG(pbl) AS avg_pbl,
     AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY station_id
-ORDER BY avg_pbl DESC; -- Order by the new primary insight
+GROUP BY station_id;
 
 SELECT * FROM q5_results LIMIT 10;
 

@@ -4,7 +4,7 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
     station_id STRING,
-    avg_cmaq_ozone DECIMAL(4,1), -- Changed from avg_airnow_ozone
+    avg_cmaq_ozone DECIMAL(4,1),
     avg_radiation DECIMAL(5,1)
 )
 ROW FORMAT DELIMITED
@@ -17,7 +17,7 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q3_results
 SELECT
     station_id,
-    AVG(cmaq_ozone) AS avg_cmaq_ozone, -- Changed from airnow_ozone
+    AVG(cmaq_ozone) AS avg_cmaq_ozone,
     AVG(radiation) AS avg_radiation
 FROM records
 GROUP BY station_id
