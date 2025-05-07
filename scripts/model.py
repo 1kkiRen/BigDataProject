@@ -39,11 +39,15 @@ def create_session() -> SparkSession:
 		.setMaster("yarn")
 		.set("spark.executor.memory", "4g")
 		.set("spark.driver.memory", "4g")
+		.set("hive.metastore.uris", "thrift://hadoop-02.uni.innopolis.ru:9883")
+		.set("spark.sql.warehouse.dir", "/user/team29/project/data/warehouse")
+		.set("spark.sql.avro.compression.codec", "snappy")
 	)
 
 	spark = (
 		SparkSession.builder
 		.config(conf=conf)
+		.enableHiveSupport()
 		.getOrCreate()
 	)
 	spark.sparkContext.setLogLevel("WARN")
@@ -52,24 +56,21 @@ def create_session() -> SparkSession:
 
 
 def load_data(spark: SparkSession) -> DataFrame:
-	# TODO: replace with Hive
 	records_df = (
-		spark.read.format("csv")
-		.option("header", "true")
-		.option("inferSchema", "true")
-		.load("data/records.csv")
+		spark.read
+		.format("avro")
+		.table("team29_projectdb.records")
 	)
 
 	stations_df = (
-		spark.read.format("csv")
-		.option("header", "true")
-		.option("inferSchema", "true")
-		.load("data/stations.csv")
+		spark.read
+		.format("avro")
+		.table("team29_projectdb.stations")
 	)
 
 	df = records_df.join(
-		stations_df.select("station_id", "latitude", "longitude"),
-		on="station_id",
+		stations_df.select("id", "latitude", "longitude"),
+		stations_df["id"] == records_df["station_id"],
 		how="left"
 	)
 
@@ -199,7 +200,8 @@ def main():
 	models = prepare_models()
 
 	summary = train_models(evaluators, models, train, test)
-	pd.DataFrame(summary).to_csv("project/output/evaluation.csv", index=False)
+	os.makedirs("output", exist_ok=True)
+	pd.DataFrame(summary).to_csv("output/evaluation.csv", index=False)
 	status("Save summary", True)
 
 	status("Bye!", True)
