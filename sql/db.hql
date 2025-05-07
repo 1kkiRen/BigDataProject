@@ -15,8 +15,8 @@ DROP TABLE IF EXISTS records_staging;
 -- Create stations table (no partitioning needed)
 CREATE EXTERNAL TABLE stations (
     id STRING,
-    latitude DOUBLE,
-    longitude DOUBLE
+    latitude FLOAT,
+    longitude FLOAT
 )
 STORED AS PARQUET
 LOCATION 'project/warehouse/stations';
@@ -25,18 +25,18 @@ LOCATION 'project/warehouse/stations';
 CREATE EXTERNAL TABLE records_staging (
     record_id INT,
     station_id STRING,
-    airnow_ozone DOUBLE,
-    cmaq_ozone DOUBLE,
-    cmaq_no2 DOUBLE,
-    cmaq_co DOUBLE,
-    cmaq_oc DOUBLE,
-    pressure DOUBLE,
-    pbl DOUBLE,
-    temperature DOUBLE,
-    wind_speed DOUBLE,
-    wind_direction DOUBLE,
-    radiation DOUBLE,
-    cloud_fraction DOUBLE,
+    airnow_ozone FLOAT,
+    cmaq_ozone FLOAT,
+    cmaq_no2 FLOAT,
+    cmaq_co FLOAT,
+    cmaq_oc FLOAT,
+    pressure FLOAT,
+    pbl FLOAT,
+    temperature FLOAT,
+    wind_speed FLOAT,
+    wind_direction FLOAT,
+    radiation FLOAT,
+    cloud_fraction FLOAT,
     month INT,
     day INT,
     hour INT
@@ -48,18 +48,18 @@ LOCATION 'project/warehouse/records';
 CREATE EXTERNAL TABLE records (
     record_id INT,
     station_id STRING,
-    airnow_ozone DOUBLE,
-    cmaq_ozone DOUBLE,
-    cmaq_no2 DOUBLE,
-    cmaq_co DOUBLE,
-    cmaq_oc DOUBLE,
-    pressure DOUBLE,
-    pbl DOUBLE,
-    temperature DOUBLE,
-    wind_speed DOUBLE,
-    wind_direction DOUBLE,
-    radiation DOUBLE,
-    cloud_fraction DOUBLE,
+    airnow_ozone FLOAT,
+    cmaq_ozone FLOAT,
+    cmaq_no2 FLOAT,
+    cmaq_co FLOAT,
+    cmaq_oc FLOAT,
+    pressure FLOAT,
+    pbl FLOAT,
+    temperature FLOAT,
+    wind_speed FLOAT,
+    wind_direction FLOAT,
+    radiation FLOAT,
+    cloud_fraction FLOAT,
     hour INT
 )
 PARTITIONED BY (month INT, day INT)

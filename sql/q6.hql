@@ -4,9 +4,9 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q6_results;
 CREATE EXTERNAL TABLE q6_results(
     day INT,
-    avg_pbl DOUBLE,
-    avg_cmaq_ozone DOUBLE,
-    avg_radiation DOUBLE
+    avg_pbl FLOAT,
+    avg_cmaq_ozone FLOAT,
+    avg_radiation FLOAT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','

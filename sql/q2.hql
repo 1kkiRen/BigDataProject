@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q2_results;
 CREATE EXTERNAL TABLE q2_results(
     id STRING,
-    latitude DOUBLE,
-    longitude DOUBLE
+    latitude FLOAT,
+    longitude FLOAT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','

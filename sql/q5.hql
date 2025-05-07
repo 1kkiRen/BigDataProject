@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q5_results;
 CREATE EXTERNAL TABLE q5_results(
     station_id STRING,
-    avg_pbl DOUBLE,
-    avg_radiation DOUBLE
+    avg_pbl FLOAT,
+    avg_radiation FLOAT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','

@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q4_results;
 CREATE EXTERNAL TABLE q4_results(
     hour INT,
-    avg_temperature DOUBLE,
-    avg_radiation DOUBLE
+    avg_temperature FLOAT,
+    avg_radiation FLOAT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','

@@ -4,7 +4,7 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
     latitude_bucket INT,
-    avg_radiation DOUBLE
+    avg_radiation FLOAT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
