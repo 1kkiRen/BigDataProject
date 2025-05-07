@@ -1,0 +1,155 @@
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Drop the database if it exists
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP DATABASE IF EXISTS team29_projectdb CASCADE;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Create the database at the specified location
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE DATABASE team29_projectdb LOCATION 'project/hive/warehouse';
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Use the new database
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> USE team29_projectdb;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Drop tables if they exist
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS stations;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS records;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS records_staging;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Create stations table (no partitioning needed)
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE stations (
+. . . . . . . . . . . . . . . . . . . . . . .>     id STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     latitude DECIMAL(7,4),
+. . . . . . . . . . . . . . . . . . . . . . .>     longitude DECIMAL(7,4)
+. . . . . . . . . . . . . . . . . . . . . . .> )
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS PARQUET
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/warehouse/stations';
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Create a staging table for records (no partitioning)
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE records_staging (
+. . . . . . . . . . . . . . . . . . . . . . .>     record_id INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     station_id STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     airnow_ozone DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_ozone DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_no2 DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_co DECIMAL(6,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_oc DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     pressure DECIMAL(7,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     pbl DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     temperature DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     wind_speed DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     wind_direction DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     radiation DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cloud_fraction DECIMAL(2,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     month INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     day INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     hour INT
+. . . . . . . . . . . . . . . . . . . . . . .> )
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS PARQUET
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/warehouse/records';
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Create the optimized records table with partitioning and bucketing
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE records (
+. . . . . . . . . . . . . . . . . . . . . . .>     record_id INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     station_id STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     airnow_ozone DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_ozone DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_no2 DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_co DECIMAL(6,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cmaq_oc DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     pressure DECIMAL(7,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     pbl DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     temperature DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     wind_speed DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     wind_direction DECIMAL(4,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     radiation DECIMAL(5,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     cloud_fraction DECIMAL(2,1),
+. . . . . . . . . . . . . . . . . . . . . . .>     hour INT
+. . . . . . . . . . . . . . . . . . . . . . .> )
+. . . . . . . . . . . . . . . . . . . . . . .> PARTITIONED BY (month INT, day INT)
+. . . . . . . . . . . . . . . . . . . . . . .> CLUSTERED BY (station_id) INTO 2 BUCKETS
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS PARQUET
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/warehouse/records_optimized'
+. . . . . . . . . . . . . . . . . . . . . . .> TBLPROPERTIES ('parquet.compression'='SNAPPY');
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Enable dynamic partitioning
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.dynamic.partition=true;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.dynamic.partition.mode=nonstrict;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.enforce.bucketing=true;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.max.dynamic.partitions=5000;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.max.dynamic.partitions.pernode=5000;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.tez.container.size=4096;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET parquet.memory.min.allocation.size=2097152;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.tez.auto.reducer.parallelism=true;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET parquet.block.size=134217728;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Insert data from staging to optimized table
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> INSERT OVERWRITE TABLE records PARTITION (month, day)
+. . . . . . . . . . . . . . . . . . . . . . .> SELECT
+. . . . . . . . . . . . . . . . . . . . . . .>     record_id, station_id, airnow_ozone, cmaq_ozone, cmaq_no2, cmaq_co, cmaq_oc,
+. . . . . . . . . . . . . . . . . . . . . . .>     pressure, pbl, temperature, wind_speed, wind_direction, radiation, cloud_fraction,
+. . . . . . . . . . . . . . . . . . . . . . .>     month, day, hour
+. . . . . . . . . . . . . . . . . . . . . . .> FROM records_staging;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS records_staging;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Check tables
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SHOW TABLES;
++-----------+
+| tab_name  |
++-----------+
+| records   |
+| stations  |
++-----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DESCRIBE stations;
++------------+---------------+----------+
+|  col_name  |   data_type   | comment  |
++------------+---------------+----------+
+| id         | string        |          |
+| latitude   | decimal(7,4)  |          |
+| longitude  | decimal(7,4)  |          |
++------------+---------------+----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DESCRIBE records;
++--------------------------+---------------+----------+
+|         col_name         |   data_type   | comment  |
++--------------------------+---------------+----------+
+| record_id                | int           |          |
+| station_id               | string        |          |
+| airnow_ozone             | decimal(4,1)  |          |
+| cmaq_ozone               | decimal(4,1)  |          |
+| cmaq_no2                 | decimal(4,1)  |          |
+| cmaq_co                  | decimal(6,1)  |          |
+| cmaq_oc                  | decimal(5,1)  |          |
+| pressure                 | decimal(7,1)  |          |
+| pbl                      | decimal(5,1)  |          |
+| temperature              | decimal(4,1)  |          |
+| wind_speed               | decimal(4,1)  |          |
+| wind_direction           | decimal(4,1)  |          |
+| radiation                | decimal(5,1)  |          |
+| cloud_fraction           | decimal(2,1)  |          |
+| hour                     | int           |          |
+| month                    | int           |          |
+| day                      | int           |          |
+|                          | NULL          | NULL     |
+| # Partition Information  | NULL          | NULL     |
+| # col_name               | data_type     | comment  |
+| month                    | int           |          |
+| day                      | int           |          |
++--------------------------+---------------+----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT * FROM stations LIMIT 5;
++---------------+--------------------+---------------------+
+|  stations.id  | stations.latitude  | stations.longitude  |
++---------------+--------------------+---------------------+
+| 120350004     | 29.4891            | -81.2768            |
+| 360850111     | 40.5802            | -74.1994            |
+| 390610040     | 39.1289            | -84.5040            |
+| 840450070006  | 34.6360            | -82.8107            |
+| 060712002     | 34.1001            | -117.4920           |
++---------------+--------------------+---------------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT * FROM records LIMIT 5;
++--------------------+---------------------+-----------------------+---------------------+-------------------+------------------+------------------+-------------------+--------------+----------------------+---------------------+-------------------------+--------------------+-------------------------+---------------+----------------+--------------+
+| records.record_id  | records.station_id  | records.airnow_ozone  | records.cmaq_ozone  | records.cmaq_no2  | records.cmaq_co  | records.cmaq_oc  | records.pressure  | records.pbl  | records.temperature  | records.wind_speed  | records.wind_direction  | records.radiation  | records.cloud_fraction  | records.hour  | records.month  | records.day  |
++--------------------+---------------------+-----------------------+---------------------+-------------------+------------------+------------------+-------------------+--------------+----------------------+---------------------+-------------------------+--------------------+-------------------------+---------------+----------------+--------------+
+| 9020165            | 180110001           | 37.0                  | 35.0                | 3.0               | 132.0            | 3.0              | 98322.0           | 48.0         | 297.0                | 2.0                 | 187.0                   | 148.0              | 0.0                     | 8             | 1              | 0            |
+| 9020164            | 390410002           | 28.0                  | 38.0                | 4.0               | 148.0            | 2.0              | 98547.0           | 619.0        | 295.0                | 3.0                 | 164.0                   | 112.0              | 0.0                     | 8             | 1              | 0            |
+| 9020163            | 060370002           | 51.0                  | 82.0                | 2.0               | 226.0            | 9.0              | 95356.0           | 622.0        | 301.0                | 2.0                 | 228.0                   | 552.0              | 0.0                     | 8             | 1              | 0            |
+| 9020159            | 420431100           | 31.0                  | 39.0                | 10.0              | 306.0            | 1.0              | 100254.0          | 816.0        | 295.0                | 1.0                 | 305.0                   | 1.0                | 1.0                     | 8             | 1              | 0            |
+| 9020157            | 120310100           | 17.0                  | 20.0                | 1.0               | 86.0             | 0.0              | 101980.0          | 408.0        | 301.0                | 5.0                 | 149.0                   | 33.0               | 0.0                     | 8             | 1              | 0            |
++--------------------+---------------------+-----------------------+---------------------+-------------------+------------------+------------------+-------------------+--------------+----------------------+---------------------+-------------------------+--------------------+-------------------------+---------------+----------------+--------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
