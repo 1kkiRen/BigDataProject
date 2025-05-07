@@ -3,7 +3,7 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q4_results;
 CREATE EXTERNAL TABLE q4_results(
-    hour INT,
+    month INT,
     avg_temperature FLOAT,
     avg_radiation FLOAT
 )
@@ -16,11 +16,11 @@ SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q4_results
 SELECT
-    hour,
-    AVG(temperature) - 274 AS avg_temperature,
-    AVG(radiation) / 2 AS avg_radiation
+    month,
+    COALESCE(AVG(temperature), 0) - 274 AS avg_temperature,
+    COALESCE(AVG(radiation), 0) / 2 AS avg_radiation
 FROM records
-GROUP BY hour;
+GROUP BY month;
 
 SELECT * FROM q4_results LIMIT 10;
 

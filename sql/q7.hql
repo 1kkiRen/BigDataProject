@@ -1,14 +1,16 @@
+-- sql/q7.hql
 USE team29_projectdb;
 
 DROP TABLE IF EXISTS q7_results;
-
 CREATE EXTERNAL TABLE q7_results(
     latitude FLOAT,
     longitude FLOAT,
     corr_temp_radiation FLOAT
 )
-ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',' 
 LOCATION 'project/hive/warehouse/q7';
+
 SET hive.resultset.use.unique.column.names=false;
 
 INSERT INTO q7_results

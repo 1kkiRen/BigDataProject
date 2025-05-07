@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS q8_results;
 
 CREATE EXTERNAL TABLE q8_results(
     radiation_level STRING,
-    count INT
+    count BIGINT
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
 LOCATION 'project/hive/warehouse/q8';
