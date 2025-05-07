@@ -7,8 +7,8 @@ DROP TABLE IF EXISTS records CASCADE;
 CREATE TABLE IF NOT EXISTS stations
 (
     id        VARCHAR(12) PRIMARY KEY,
-    latitude  FLOAT,
-    longitude FLOAT
+    latitude  REAL,
+    longitude REAL
 );
 
 CREATE TABLE IF NOT EXISTS records
