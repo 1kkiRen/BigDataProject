@@ -1,3 +1,24 @@
+"""
+model.py
+
+This module provides the complete machine learning pipeline for training and evaluating
+multiple classification models using Apache Spark. It is designed for use in a distributed
+environment (YARN cluster) and reads data from Hive tables.
+
+Main functionality includes:
+- Creating a Spark session with custom configuration.
+- Loading and joining datasets.
+- Extracting features using a pipeline.
+- Preparing and training various ML models (Logistic Regression, Random Forest, etc.).
+- Evaluating model performance using metrics like accuracy and F1 score.
+- Saving trained models and their predictions to disk.
+
+The script is tailored for team29 and utilizes PySpark's MLlib and Hive support for data access.
+
+To execute the pipeline, run this module directly:
+    python model.py
+"""
+
 import os
 import sys
 from typing import Dict, Tuple, Any, List
@@ -11,6 +32,8 @@ from pyspark.ml.tuning import CrossValidator
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
 
+# C0413 checks only if some code is present before imports.
+# This line is required to run the script with pyspark.
 # pylint: disable=C0413
 sys.path.append(os.getcwd())
 from src.model.classifier.lr import prepare_lr
