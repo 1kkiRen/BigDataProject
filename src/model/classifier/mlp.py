@@ -3,7 +3,7 @@ from pyspark.ml.tuning import ParamGridBuilder
 
 
 def prepare_mlp(features: int, labels: int):
-	mlp = MultilayerPerceptronClassifier(labelCol="label", featuresCol="features")
+	mlp = MultilayerPerceptronClassifier(labelCol="label", featuresCol="features", maxIter=2)
 	grid = (
 		ParamGridBuilder()
 		.addGrid(
@@ -11,11 +11,11 @@ def prepare_mlp(features: int, labels: int):
 			[
 				[features, 8, labels],
 				[features, 16, labels],
-				[features, 32, labels],
+				[features, 24, labels],
 			]
 		)
 		.addGrid(mlp.stepSize, [0.01, 0.05, 0.1])
-		.addGrid(mlp.tol, [1e-4, 1e-3, 1e-2])
+		.addGrid(mlp.solver, ["l-bfgs", "gd"])
 		.build()
 	)
 	return mlp, grid

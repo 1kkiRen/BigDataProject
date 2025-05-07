@@ -46,6 +46,7 @@ def create_session() -> SparkSession:
 		.config(conf=conf)
 		.getOrCreate()
 	)
+	spark.sparkContext.setLogLevel("ERROR")
 
 	return spark
 
@@ -83,11 +84,11 @@ def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
 	svc, svc_grid = prepare_svc()
 
 	models = {
-		"svc": (svc, svc_grid),
-		"mlp": (mlp, mlp_grid),
 		"lr": (lr, lr_grid),
 		"nb": (nb, nb_grid),
 		"rf": (rf, rf_grid),
+		"mlp": (mlp, mlp_grid),
+		"svc": (svc, svc_grid),
 	}
 
 	return models
@@ -103,13 +104,11 @@ def prepare_evaluators() -> Dict[str, Evaluator]:
 
 
 def train_model(model, grid, train) -> Model:
-	parallelism = os.cpu_count()
 	cv = CrossValidator(
 		estimator=model,
 		estimatorParamMaps=grid,
 		evaluator=MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="f1"),
 		numFolds=3,
-		parallelism=parallelism,
 	)
 
 	model = cv.fit(train)
@@ -183,8 +182,8 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.repartition(8).cache()
-	test = test.repartition(8).cache()
+	train = train.repartition(16).cache()
+	test = test.repartition(16).cache()
 	status("Repartition train/test", True)
 
 	# Save train/test
