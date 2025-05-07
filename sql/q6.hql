@@ -15,7 +15,7 @@ LOCATION 'project/hive/warehouse/q6';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT OVERWRITE TABLE q6_results
+INSERT INTO q6_results
 SELECT
     day,
     AVG(pbl) AS avg_pbl,

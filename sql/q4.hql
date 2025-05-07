@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q4';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT OVERWRITE TABLE q4_results
+INSERT INTO q4_results
 SELECT
     hour,
     AVG(temperature) AS avg_temperature,

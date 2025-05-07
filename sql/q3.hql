@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q3';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT OVERWRITE TABLE q3_results
+INSERT INTO q3_results
 SELECT
     station_id,
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
