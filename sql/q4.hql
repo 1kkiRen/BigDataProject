@@ -20,8 +20,7 @@ SELECT
     AVG(temperature) AS avg_temperature,
     AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY hour
-ORDER BY hour;
+GROUP BY hour;
 
 SELECT * FROM q4_results LIMIT 10;
 

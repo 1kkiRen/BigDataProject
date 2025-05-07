@@ -22,8 +22,7 @@ SELECT
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
     AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY month
-ORDER BY month;
+GROUP BY day;
 
 SELECT * FROM q6_results LIMIT 10;
 

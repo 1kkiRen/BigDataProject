@@ -20,8 +20,7 @@ SELECT
     AVG(cmaq_ozone) AS avg_cmaq_ozone,
     AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY station_id
-ORDER BY avg_cmaq_ozone DESC; -- Order by the new primary insight
+GROUP BY station_id;
 
 SELECT * FROM q3_results LIMIT 10;
 
