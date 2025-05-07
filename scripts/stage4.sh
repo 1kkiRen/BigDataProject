@@ -3,6 +3,8 @@
 password=$(head -n 1 secrets/.hive.pass)
 
 beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -e "
+USE team29_projectdb;
+
 DROP TABLE IF EXISTS model_svc_predictions;
 DROP TABLE IF EXISTS model_rf_predictions;
 DROP TABLE IF EXISTS model_nb_predictions;
@@ -13,6 +15,8 @@ DROP TABLE IF EXISTS samples;
 "
 
 beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -e "
+USE team29_projectdb;
+
 CREATE EXTERNAL TABLE IF NOT EXISTS model_svc_predictions (
   label INT,
   prediction INT
