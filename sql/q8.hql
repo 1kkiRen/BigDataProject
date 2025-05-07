@@ -1,3 +1,4 @@
+-- sql/q8.hql
 USE team29_projectdb;
 
 DROP TABLE IF EXISTS q8_results;
@@ -10,7 +11,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q8';
 SET hive.resultset.use.unique.column.names=false;
 
-INSERT INTO q8_results
+INSERT OVERWRITE TABLE q8_results
 SELECT
     CASE
         WHEN r.radiation / 2 <= 100 THEN 'low'

@@ -4,7 +4,7 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
     latitude_bucket INT,
-    avg_radiation FLOAT
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -13,7 +13,7 @@ LOCATION 'project/hive/warehouse/q3';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q3_results
+INSERT OVERWRITE TABLE q3_results
 SELECT 
   FLOOR(s.latitude / 5.0) * 5 AS latitude_bucket, 
   AVG(r.radiation) / 2 AS avg_radiation

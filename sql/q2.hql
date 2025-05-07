@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q2';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q2_results
+INSERT OVERWRITE TABLE q2_results
 SELECT id, latitude, longitude
 FROM stations;
 

@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q4_results;
 CREATE EXTERNAL TABLE q4_results(
     month INT,
-    avg_temperature FLOAT,
-    avg_radiation FLOAT
+    avg_temperature DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q4';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q4_results
+INSERT OVERWRITE TABLE q4_results
 SELECT
     month,
     COALESCE(AVG(temperature), 0) - 274 AS avg_temperature,

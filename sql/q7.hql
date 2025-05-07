@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS q7_results;
 CREATE EXTERNAL TABLE q7_results(
     latitude FLOAT,
     longitude FLOAT,
-    corr_temp_radiation FLOAT
+    corr_temp_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ',' 
@@ -13,7 +13,7 @@ LOCATION 'project/hive/warehouse/q7';
 
 SET hive.resultset.use.unique.column.names=false;
 
-INSERT INTO q7_results
+INSERT OVERWRITE TABLE q7_results
 SELECT
     s.latitude,
     s.longitude,

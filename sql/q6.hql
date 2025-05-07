@@ -5,8 +5,8 @@ DROP TABLE IF EXISTS q6_results;
 CREATE EXTERNAL TABLE q6_results(
     hour INT,
     avg_pbl FLOAT,
-    avg_cmaq_ozone FLOAT,
-    avg_radiation FLOAT
+    avg_cmaq_ozone DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -15,7 +15,7 @@ LOCATION 'project/hive/warehouse/q6';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q6_results
+INSERT OVERWRITE TABLE q6_results
 SELECT
     hour,
     AVG(pbl) AS avg_pbl,
