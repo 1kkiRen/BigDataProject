@@ -3,9 +3,9 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q4_results;
 CREATE EXTERNAL TABLE q4_results(
-    hour INT,
-    avg_temperature FLOAT,
-    avg_radiation FLOAT
+    month INT,
+    avg_temperature DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -14,13 +14,13 @@ LOCATION 'project/hive/warehouse/q4';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q4_results
+INSERT OVERWRITE TABLE q4_results
 SELECT
-    hour,
-    AVG(temperature) AS avg_temperature,
+    month,
+    COALESCE(AVG(temperature), 0) - 274 AS avg_temperature,
     AVG(radiation) AS avg_radiation
 FROM records
-GROUP BY hour;
+GROUP BY month;
 
 SELECT * FROM q4_results LIMIT 10;
 
