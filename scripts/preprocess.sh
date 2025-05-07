@@ -9,7 +9,6 @@ fi
 
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt -qqq
-MAKEFLAGS="-j1" HOROVOD_WITHOUT_GLOO=1 HOROVOD_WITH_TENSORFLOW=1 pip install horovod[tensorflow,spark]==0.22.1
 
 # Create 'data' directory
 if [ ! -d "data" ]; then
