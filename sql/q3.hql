@@ -16,7 +16,7 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT INTO q3_results
 SELECT latitude, AVG(radiation)
 FROM records
-JOIN stations ON records.station_id = station.id
+JOIN stations ON records.station_id = stations.id
 GROUP BY station_id;
 
 SELECT * FROM q3_results LIMIT 10;
