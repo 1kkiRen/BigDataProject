@@ -8,7 +8,7 @@ def prepare_svc():
 	grid = (
 		ParamGridBuilder()
 		.addGrid(svc.regParam, [0.01, 0.1, 1.0])
-		.addGrid(svc.standardization, [True, False])
+		.addGrid(svc.aggregationDepth, [1, 2])
 		.build()
 	)
 	return svc_vs, grid

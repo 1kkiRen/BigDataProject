@@ -63,7 +63,7 @@ class Feature:
 		]
 
 		features_assembler = VectorAssembler(
-			inputCols=Feature.Linear + sincos_features + geo_features,
+			inputCols=["scaled_features"] + sincos_features + geo_features,
 			outputCol="features"
 		)
 		labeler = RadiationLabeler(inputCol=Feature.Label, outputCol="label")
