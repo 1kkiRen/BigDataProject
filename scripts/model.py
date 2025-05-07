@@ -21,191 +21,199 @@ from src.model.feature import Feature
 
 
 def status(task: str, done: bool, width: int = 80):
-	green = '\033[92m'
-	yellow = '\033[93m'
-	reset = '\033[0m'
+    green = '\033[92m'
+    yellow = '\033[93m'
+    reset = '\033[0m'
 
-	color = green if done else yellow
-	status_str = f"[{color}{'Done' if done else 'Todo'}{reset}]"
-	print(f"{task:<{width - len(status_str) - 1}} {status_str}")
+    color = green if done else yellow
+    status_str = f"[{color}{'Done' if done else 'Todo'}{reset}]"
+    print(f"{task:<{width - len(status_str) - 1}} {status_str}")
 
 
 def create_session() -> SparkSession:
-	team = 29
+    team = 29
 
-	conf = (
-		SparkConf()
-		.setAppName(f"team{team} - spark ML")
-		.setMaster("yarn")
-		.set("spark.executor.memory", "4g")
-		.set("spark.driver.memory", "4g")
-		.set("hive.metastore.uris", "thrift://hadoop-02.uni.innopolis.ru:9883")
-		.set("spark.sql.warehouse.dir", "/user/team29/project/data/warehouse")
-		.set("spark.sql.avro.compression.codec", "snappy")
-	)
+    conf = (
+        SparkConf()
+        .setAppName(f"team{team} - spark ML")
+        .setMaster("yarn")
+        .set("spark.executor.memory", "4g")
+        .set("spark.driver.memory", "4g")
+        .set("hive.metastore.uris", "thrift://hadoop-02.uni.innopolis.ru:9883")
+        .set("spark.sql.warehouse.dir", "/user/team29/project/data/warehouse")
+        .set("spark.sql.avro.compression.codec", "snappy")
+    )
 
-	spark = (
-		SparkSession.builder
-		.config(conf=conf)
-		.enableHiveSupport()
-		.getOrCreate()
-	)
-	spark.sparkContext.setLogLevel("WARN")
+    spark = (
+        SparkSession.builder
+        .config(conf=conf)
+        .enableHiveSupport()
+        .getOrCreate()
+    )
+    spark.sparkContext.setLogLevel("WARN")
 
-	return spark
+    return spark
 
 
 def load_data(spark: SparkSession) -> DataFrame:
-	records_df = (
-		spark.read
-		.format("avro")
-		.table("team29_projectdb.records")
-	)
+    records_df = (
+        spark.read
+        .format("avro")
+        .table("team29_projectdb.records")
+    )
 
-	stations_df = (
-		spark.read
-		.format("avro")
-		.table("team29_projectdb.stations")
-	)
+    stations_df = (
+        spark.read
+        .format("avro")
+        .table("team29_projectdb.stations")
+    )
 
-	df = records_df.join(
-		stations_df.select("id", "latitude", "longitude"),
-		stations_df["id"] == records_df["station_id"],
-		how="left"
-	)
+    df = records_df.join(
+        stations_df.select("id", "latitude", "longitude"),
+        stations_df["id"] == records_df["station_id"],
+        how="left"
+    )
 
-	return df
+    return df
 
 
 def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
-	rf, rf_grid = prepare_rf()
-	nb, nb_grid = prepare_nb()
-	lr, lr_grid = prepare_lr()
-	mlp, mlp_grid = prepare_mlp(18, 3)
-	svc, svc_grid = prepare_svc()
+    rf, rf_grid = prepare_rf()
+    nb, nb_grid = prepare_nb()
+    lr, lr_grid = prepare_lr()
+    mlp, mlp_grid = prepare_mlp(18, 3)
+    svc, svc_grid = prepare_svc()
 
-	models = {
-		"lr": (lr, lr_grid),
-		"nb": (nb, nb_grid),
-		"rf": (rf, rf_grid),
-		"mlp": (mlp, mlp_grid),
-		"svc": (svc, svc_grid),
-	}
+    models = {
+        "lr": (lr, lr_grid),
+        "nb": (nb, nb_grid),
+        "rf": (rf, rf_grid),
+        "mlp": (mlp, mlp_grid),
+        "svc": (svc, svc_grid),
+    }
 
-	return models
+    return models
 
 
 def prepare_evaluators() -> Dict[str, Evaluator]:
-	metrics = ["accuracy", "f1"]
-	evaluators = {
-		m: MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName=m)
-		for m in metrics
-	}
-	return evaluators
+    metrics = ["accuracy", "f1"]
+    evaluators = {
+        m: MulticlassClassificationEvaluator(
+            labelCol="label",
+            predictionCol="prediction",
+            metricName=m,
+        )
+        for m in metrics
+    }
+    return evaluators
 
 
 def train_model(model, grid, train) -> Model:
-	cpu_count = os.cpu_count()
-	cv = CrossValidator(
-		estimator=model,
-		estimatorParamMaps=grid,
-		evaluator=MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="f1"),
-		numFolds=3,
-		parallelism=cpu_count,
-	)
+    cpu_count = os.cpu_count()
+    cv = CrossValidator(
+        estimator=model,
+        estimatorParamMaps=grid,
+        evaluator=MulticlassClassificationEvaluator(
+            labelCol="label",
+            predictionCol="prediction",
+            metricName="f1",
+        ),
+        numFolds=3,
+        parallelism=cpu_count,
+    )
 
-	model = cv.fit(train)
-	model = model.bestModel
+    model = cv.fit(train)
+    model = model.bestModel
 
-	return model
+    return model
 
 
 def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
-	summary = []
-	for name, (model, grid) in models.items():
-		# Train model
-		model = train_model(model, grid, train)
-		status(f"Train {name}", True)
+    summary = []
+    for name, (model, grid) in models.items():
+        # Train model
+        model = train_model(model, grid, train)
+        status(f"Train {name}", True)
 
-		# Save model
-		model.write().overwrite().save(f"project/models/model_{name}")
-		status(f"Save {name}", True)
+        # Save model
+        model.write().overwrite().save(f"project/models/model_{name}")
+        status(f"Save {name}", True)
 
-		# Predict with the model
-		predictions = model.transform(test)
-		predictions = predictions.select("label", "prediction")
-		status("Predict test labels", True)
+        # Predict with the model
+        predictions = model.transform(test)
+        predictions = predictions.select("label", "prediction")
+        status("Predict test labels", True)
 
-		# Evaluate the model
-		row = {"model": str(model)}
-		for m, e in evaluators.items():
-			score = e.evaluate(predictions)
-			row[m] = score
-			status(f"Evaluate {m}: {score}", True)
-		summary.append(row)
-		print(row)
+        # Evaluate the model
+        row = {"model": str(model)}
+        for m, e in evaluators.items():
+            score = e.evaluate(predictions)
+            row[m] = score
+            status(f"Evaluate {m}: {score}", True)
+        summary.append(row)
+        print(row)
 
-		# Save predictions
-		predictions = predictions.withColumn("prediction", F.col("prediction").cast("integer"))
-		predictions = predictions.coalesce(1)
-		predictions.write.mode("overwrite").csv(f"project/output/model_{name}_predictions")
-		status("Save predictions", True)
+        # Save predictions
+        predictions = predictions.withColumn("prediction", F.col("prediction").cast("integer"))
+        predictions = predictions.coalesce(1)
+        predictions.write.mode("overwrite").csv(f"project/output/model_{name}_predictions")
+        status("Save predictions", True)
 
-	return summary
+    return summary
 
 
 def main():
-	# Create session
-	spark = create_session()
-	status("Create session", True)
+    # Create session
+    spark = create_session()
+    status("Create session", True)
 
-	# Load data
-	df = load_data(spark)
-	status("Load data", True)
+    # Load data
+    df = load_data(spark)
+    status("Load data", True)
 
-	# Split data
-	train, test = df.randomSplit([0.7, 0.3], seed=42)
-	status("Split train/test", True)
+    # Split data
+    train, test = df.randomSplit([0.7, 0.3], seed=42)
+    status("Split train/test", True)
 
-	# Create pipline
-	pipeline = Feature.pipeline()
-	status("Create feature extraction pipeline", True)
+    # Create pipline
+    pipeline = Feature.pipeline()
+    status("Create feature extraction pipeline", True)
 
-	# Fit pipeline
-	pipeline = pipeline.fit(train)
-	status("Fit feature extraction pipeline", True)
+    # Fit pipeline
+    pipeline = pipeline.fit(train)
+    status("Fit feature extraction pipeline", True)
 
-	# Apply pipeline
-	train = pipeline.transform(train)
-	test = pipeline.transform(test)
-	status("Apply feature extraction pipeline", True)
+    # Apply pipeline
+    train = pipeline.transform(train)
+    test = pipeline.transform(test)
+    status("Apply feature extraction pipeline", True)
 
-	# Select the necessary columns
-	cols = ["features", "label"]
-	train = train.select(cols)
-	test = test.select(cols)
+    # Select the necessary columns
+    cols = ["features", "label"]
+    train = train.select(cols)
+    test = test.select(cols)
 
-	# Repartition train/test
-	train = train.repartition(16).cache()
-	test = test.repartition(16).cache()
-	status("Repartition train/test", True)
+    # Repartition train/test
+    train = train.repartition(16).cache()
+    test = test.repartition(16).cache()
+    status("Repartition train/test", True)
 
-	# Save train/test
-	train.write.mode("overwrite").json("project/data/train")
-	test.write.mode("overwrite").json("project/data/test")
-	status("Save train/test", True)
+    # Save train/test
+    train.write.mode("overwrite").json("project/data/train")
+    test.write.mode("overwrite").json("project/data/test")
+    status("Save train/test", True)
 
-	# Prepare evaluators and models
-	evaluators = prepare_evaluators()
-	models = prepare_models()
+    # Prepare evaluators and models
+    evaluators = prepare_evaluators()
+    models = prepare_models()
 
-	summary = train_models(evaluators, models, train, test)
-	os.makedirs("output", exist_ok=True)
-	pd.DataFrame(summary).to_csv("output/evaluation.csv", index=False)
-	status("Save summary", True)
+    summary = train_models(evaluators, models, train, test)
+    os.makedirs("output", exist_ok=True)
+    pd.DataFrame(summary).to_csv("output/evaluation.csv", index=False)
+    status("Save summary", True)
 
-	status("Bye!", True)
+    status("Bye!", True)
 
 
 if __name__ == "__main__":
-	main()
+    main()
