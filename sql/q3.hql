@@ -3,8 +3,8 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
-    latitude DOUBLE,
-    radiation DOUBLE
+    latitude_bucket DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
