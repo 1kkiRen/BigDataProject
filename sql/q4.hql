@@ -18,7 +18,7 @@ INSERT OVERWRITE TABLE q4_results
 SELECT
     month,
     COALESCE(AVG(temperature), 0) - 274 AS avg_temperature,
-    COALESCE(AVG(radiation), 0) / 2 AS avg_radiation
+    AVG(radiation) AS avg_radiation
 FROM records
 GROUP BY month;
 

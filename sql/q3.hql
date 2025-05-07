@@ -16,7 +16,7 @@ SET hive.resultset.use.unique.column.names = false;
 INSERT OVERWRITE TABLE q3_results
 SELECT 
   FLOOR(s.latitude / 5.0) * 5 AS latitude_bucket, 
-  AVG(r.radiation) / 2 AS avg_radiation
+  AVG(r.radiation) AS avg_radiation
 FROM records r
 JOIN stations s ON r.station_id = s.id
 GROUP BY FLOOR(s.latitude / 5.0) * 5;

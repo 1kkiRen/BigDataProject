@@ -14,16 +14,16 @@ SET hive.resultset.use.unique.column.names=false;
 INSERT OVERWRITE TABLE q8_results
 SELECT
     CASE
-        WHEN r.radiation / 2 <= 100 THEN 'low'
-        WHEN r.radiation / 2  > 100 AND r.radiation / 2 <= 500 THEN 'normal'
+        WHEN r.radiation <= 100 THEN 'low'
+        WHEN r.radiation > 100 AND r.radiation <= 500 THEN 'normal'
         ELSE 'high'
     END AS radiation_level,
     COUNT(*) AS count
 FROM records r
 GROUP BY
     CASE
-        WHEN r.radiation / 2 <= 100 THEN 'low'
-        WHEN r.radiation / 2 > 100 AND r.radiation / 2 <= 500 THEN 'normal'
+        WHEN r.radiation <= 100 THEN 'low'
+        WHEN r.radiation > 100 AND r.radiation <= 500 THEN 'normal'
         ELSE 'high'
     END
 ORDER BY
