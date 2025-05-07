@@ -4,9 +4,9 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q6_results;
 CREATE EXTERNAL TABLE q6_results(
     day INT,
-    avg_pbl DECIMAL(5,1),
-    avg_cmaq_ozone DECIMAL(4,1),
-    avg_radiation DECIMAL(5,1)
+    avg_pbl DOUBLE,
+    avg_cmaq_ozone DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -15,7 +15,7 @@ LOCATION 'project/hive/warehouse/q6';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q6_results
+INSERT OVERWRITE TABLE q6_results
 SELECT
     day,
     AVG(pbl) AS avg_pbl,

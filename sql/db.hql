@@ -15,8 +15,8 @@ DROP TABLE IF EXISTS records_staging;
 -- Create stations table (no partitioning needed)
 CREATE EXTERNAL TABLE stations (
     id STRING,
-    latitude DECIMAL(7,4),
-    longitude DECIMAL(7,4)
+    latitude DOUBLE,
+    longitude DOUBLE
 )
 STORED AS PARQUET
 LOCATION 'project/warehouse/stations';
@@ -25,18 +25,18 @@ LOCATION 'project/warehouse/stations';
 CREATE EXTERNAL TABLE records_staging (
     record_id INT,
     station_id STRING,
-    airnow_ozone DECIMAL(4,1),
-    cmaq_ozone DECIMAL(4,1),
-    cmaq_no2 DECIMAL(4,1),
-    cmaq_co DECIMAL(6,1),
-    cmaq_oc DECIMAL(5,1),
-    pressure DECIMAL(7,1),
-    pbl DECIMAL(5,1),
-    temperature DECIMAL(4,1),
-    wind_speed DECIMAL(4,1),
-    wind_direction DECIMAL(4,1),
-    radiation DECIMAL(5,1),
-    cloud_fraction DECIMAL(2,1),
+    airnow_ozone DOUBLE,
+    cmaq_ozone DOUBLE,
+    cmaq_no2 DOUBLE,
+    cmaq_co DOUBLE,
+    cmaq_oc DOUBLE,
+    pressure DOUBLE,
+    pbl DOUBLE,
+    temperature DOUBLE,
+    wind_speed DOUBLE,
+    wind_direction DOUBLE,
+    radiation DOUBLE,
+    cloud_fraction DOUBLE,
     month INT,
     day INT,
     hour INT
@@ -48,18 +48,18 @@ LOCATION 'project/warehouse/records';
 CREATE EXTERNAL TABLE records (
     record_id INT,
     station_id STRING,
-    airnow_ozone DECIMAL(4,1),
-    cmaq_ozone DECIMAL(4,1),
-    cmaq_no2 DECIMAL(4,1),
-    cmaq_co DECIMAL(6,1),
-    cmaq_oc DECIMAL(5,1),
-    pressure DECIMAL(7,1),
-    pbl DECIMAL(5,1),
-    temperature DECIMAL(4,1),
-    wind_speed DECIMAL(4,1),
-    wind_direction DECIMAL(4,1),
-    radiation DECIMAL(5,1),
-    cloud_fraction DECIMAL(2,1),
+    airnow_ozone DOUBLE,
+    cmaq_ozone DOUBLE,
+    cmaq_no2 DOUBLE,
+    cmaq_co DOUBLE,
+    cmaq_oc DOUBLE,
+    pressure DOUBLE,
+    pbl DOUBLE,
+    temperature DOUBLE,
+    wind_speed DOUBLE,
+    wind_direction DOUBLE,
+    radiation DOUBLE,
+    cloud_fraction DOUBLE,
     hour INT
 )
 PARTITIONED BY (month INT, day INT)

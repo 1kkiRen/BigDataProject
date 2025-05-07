@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q2_results;
 CREATE EXTERNAL TABLE q2_results(
     id STRING,
-    latitude DECIMAL(7,4),
-    longitude DECIMAL(7,4)
+    latitude DOUBLE,
+    longitude DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q2';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q2_results
+INSERT OVERWRITE TABLE q2_results
 SELECT id, latitude, longitude
 FROM stations;
 

@@ -4,8 +4,8 @@ USE team29_projectdb;
 DROP TABLE IF EXISTS q5_results;
 CREATE EXTERNAL TABLE q5_results(
     station_id STRING,
-    avg_pbl DECIMAL(5,1),
-    avg_radiation DECIMAL(5,1)
+    avg_pbl DOUBLE,
+    avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -14,7 +14,7 @@ LOCATION 'project/hive/warehouse/q5';
 -- To not display table names with column names
 SET hive.resultset.use.unique.column.names = false;
 
-INSERT INTO q5_results
+INSERT OVERWRITE TABLE q5_results
 SELECT
     station_id,
     AVG(pbl) AS avg_pbl,
