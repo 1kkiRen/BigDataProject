@@ -61,7 +61,10 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
 LOCATION '/user/team29/project/output/model_lr_predictions';
+"
 
+beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -e "
+USE team29_projectdb;
 CREATE EXTERNAL TABLE IF NOT EXISTS model_evaluation (
   model STRING,
   accuracy DOUBLE,
@@ -71,11 +74,14 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 STORED AS TEXTFILE
 LOCATION '/user/team29/project/output/evaluation'
 TBLPROPERTIES (
-  "skip.header.line.count"="1",
-  "serialization.format"=",",
-  "field.delim"=","
+  'skip.header.line.count'='1',
+  'serialization.format'= ',',
+  'field.delim' = ','
 );
+"
 
+beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -e "
+USE team29_projectdb;
 CREATE EXTERNAL TABLE IF NOT EXISTS samples (
     feature_0 DOUBLE,
     feature_1 DOUBLE,
