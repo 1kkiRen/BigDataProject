@@ -3,7 +3,7 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
-    latitude_bucket DOUBLE,
+    latitude_bucket INT,
     avg_radiation DOUBLE
 )
 ROW FORMAT DELIMITED
@@ -14,10 +14,14 @@ LOCATION 'project/hive/warehouse/q3';
 SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q3_results
-SELECT FLOOR(s.latitude / 5.0) * 5 AS latitude_bucket, AVG(radiation) as avg_radiation
+INSERT INTO q3_results
+SELECT 
+  FLOOR(s.latitude / 5.0) * 5 AS latitude_bucket, 
+  AVG(r.radiation) AS avg_radiation
 FROM records r
 JOIN stations s ON r.station_id = s.id
-GROUP BY latitude_bucket;
+GROUP BY FLOOR(s.latitude / 5.0) * 5;
+
 
 SELECT * FROM q3_results LIMIT 10;
 
