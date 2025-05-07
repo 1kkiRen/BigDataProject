@@ -50,6 +50,7 @@ DATA_DIR.mkdir(exist_ok=True)
 DB_HOST = "hadoop-04.uni.innopolis.ru"
 DB_USER = "team29"
 DB_NAME = "team29_projectdb"
+DB_PORT = 5432
 
 NAME_MAPPING = {
     "StationID": "station_id",
