@@ -1,0 +1,6 @@
+model,accuracy,f1
+"LogisticRegressionModel: uid=LogisticRegression_c9af87418cbb, numClasses=3, numFeatures=18",0.7140170230112515,0.6698913793846868
+"NaiveBayesModel: uid=NaiveBayes_421f28b7474a, modelType=gaussian, numClasses=3, numFeatures=18",0.6210505791973981,0.5602544932917713
+"RandomForestClassificationModel: uid=RandomForestClassifier_9b15b11eee52, numTrees=64, numClasses=3, numFeatures=18",0.8494882887093272,0.8412417428349981
+"MultilayerPerceptronClassificationModel: uid=MultilayerPerceptronClassifier_4f71062d99b2, numLayers=3, numClasses=3, numFeatures=18",0.5710411989601758,0.42233410526459336
+OneVsRestModel_acc98eb9ef19,0.6965981620632247,0.6180831761879623
