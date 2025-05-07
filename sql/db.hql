@@ -19,7 +19,8 @@ CREATE EXTERNAL TABLE stations (
     longitude FLOAT
 )
 STORED AS PARQUET
-LOCATION 'project/warehouse/stations';
+LOCATION 'project/warehouse/stations'
+TBLPROPERTIES ('parquet.compression'='SNAPPY');
 
 -- Create a staging table for records (no partitioning)
 CREATE EXTERNAL TABLE records_staging (
@@ -42,7 +43,8 @@ CREATE EXTERNAL TABLE records_staging (
     hour INT
 )
 STORED AS PARQUET
-LOCATION 'project/warehouse/records';
+LOCATION 'project/warehouse/records'
+TBLPROPERTIES ('parquet.compression'='SNAPPY');
 
 -- Create the optimized records table with partitioning and bucketing
 CREATE EXTERNAL TABLE records (
