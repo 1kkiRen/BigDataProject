@@ -1,3 +1,45 @@
+"""
+Module for managing and processing data, including database operations and data preprocessing.
+
+This module provides functionalities to connect to a PostgreSQL database, create necessary tables, import data,
+and preprocess dataset. It includes functions to handle database connections, execute SQL commands,
+and ensure data integrity before loading it into the database.
+
+Modules:
+    sys: For system-specific parameters and functions.
+    pprint: For pretty-printing data structures.
+    pathlib.Path: For handling filesystem paths.
+    pandas as pd: For data manipulation and analysis.
+    psycopg2 as psql: For PostgreSQL database operations.
+
+Constants:
+    SQL_DIR (Path): Directory path for SQL scripts.
+    DATA_DIR (Path): Directory path for data files.
+    DB_HOST (str): Database host address.
+    DB_USER (str): Database username.
+    DB_NAME (str): Database name.
+    DB_PORT (int): Database port number.
+    NAME_MAPPING (dict): Mapping of column names for dataset renaming.
+
+Functions:
+    connect(): Establishes a connection to the PostgreSQL database using credentials from a file.
+    create_tables(conn): Creates the necessary tables in the database by executing an SQL script.
+    import_data(conn): Imports data from CSV files into the database using SQL commands.
+    test_db(conn): Executes test queries on the database and prints the results.
+    load_data(): Loads the dataset from a CSV file, drops unnecessary columns, and renames columns.
+    check_on(records): Filters the dataset based on specified conditions to ensure data integrity.
+    preprocess_data(): Preprocesses the dataset by loading, cleaning, and saving it to CSV files.
+    main(): The main function to execute the data processing and database operations workflow.
+
+Usage:
+    This module is intended to be run as a script. It connects to the database, preprocesses the data,
+    creates the necessary tables, imports the data, and handles any exceptions that may occur.
+
+Note:
+    Ensure that the required files (e.g., SQL scripts, data files) are present in the specified directories
+    before running the module.
+"""
+
 import sys
 from pprint import pprint
 from pathlib import Path
@@ -204,10 +246,11 @@ def preprocess_data(force: bool):
 
 
 def main():
+    preprocess_data(False)
+
     conn = connect()
 
     try:
-        preprocess_data(False)
         create_tables(conn)
         import_data(conn)
         test_db(conn)
