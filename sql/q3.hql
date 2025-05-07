@@ -3,9 +3,8 @@ USE team29_projectdb;
 
 DROP TABLE IF EXISTS q3_results;
 CREATE EXTERNAL TABLE q3_results(
-    station_id STRING,
-    avg_cmaq_ozone DOUBLE,
-    avg_radiation DOUBLE
+    latitude DOUBLE,
+    radiation DOUBLE,
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -15,11 +14,9 @@ LOCATION 'project/hive/warehouse/q3';
 SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q3_results
-SELECT
-    station_id,
-    AVG(cmaq_ozone) AS avg_cmaq_ozone,
-    AVG(radiation) AS avg_radiation
+SELECT latitude, AVG(radiation)
 FROM records
+JOIN stations ON records.station_id = station.id
 GROUP BY station_id;
 
 SELECT * FROM q3_results LIMIT 10;
