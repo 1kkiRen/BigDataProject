@@ -8,15 +8,15 @@ if [ -z "$VIRTUAL_ENV" ]; then
 fi
 
 python -m pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
+pip install -r requirements.txt -qqq
 
 # Create 'data' directory
-if [ ! -d "data/" ]; then
+if [ ! -d "data" ]; then
   mkdir data
 fi
 
 # Create 'secrets' directory
-if [ ! -f "secrets/" ]; then
+if [ ! -d "secrets" ]; then
   mkdir secrets
 fi
 
