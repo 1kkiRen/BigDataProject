@@ -30,7 +30,7 @@ ORDER BY
         WHEN radiation_level = 'low' THEN 1
         WHEN radiation_level = 'normal' THEN 2
         ELSE 3
-    END
+    END;
 
 SELECT * FROM q8_results LIMIT 10;
 

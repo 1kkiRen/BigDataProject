@@ -1,8 +1,8 @@
 -- Drop the database if it exists
-DROP DATABASE IF EXISTS team29_projectdb CASCADE;
+-- DROP DATABASE IF EXISTS team29_projectdb CASCADE;
 
 -- Create the database at the specified location
-CREATE DATABASE team29_projectdb LOCATION 'project/hive/warehouse';
+-- CREATE DATABASE team29_projectdb LOCATION 'project/hive/warehouse';
 
 -- Use the new database
 USE team29_projectdb;
@@ -86,14 +86,12 @@ INSERT OVERWRITE TABLE records PARTITION (month, day)
 SELECT
     record_id, station_id, airnow_ozone, cmaq_ozone, cmaq_no2, cmaq_co, cmaq_oc,
     pressure, pbl, temperature, wind_speed, wind_direction, radiation, cloud_fraction,
-    month, day, hour
+    hour, month, day
 FROM records_staging;
-
-DROP TABLE IF EXISTS records_staging;
 
 -- Check tables
 SHOW TABLES;
 DESCRIBE stations;
 DESCRIBE records;
-SELECT * FROM stations LIMIT 5;
-SELECT * FROM records LIMIT 5;
+SELECT * FROM stations LIMIT 10;
+SELECT * FROM records LIMIT 10;
