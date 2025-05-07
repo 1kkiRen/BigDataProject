@@ -3,12 +3,13 @@ import sys
 from typing import Dict, Tuple, Any, List
 
 import pandas as pd
-from pyspark import SparkConf, StorageLevel
+from pyspark import SparkConf
 from pyspark.ml import Model
 from pyspark.ml.classification import Classifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator, Evaluator
 from pyspark.ml.tuning import CrossValidator
 from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import functions as F
 
 sys.path.append(os.getcwd())
 from src.model.classifier.lr import prepare_lr
@@ -45,6 +46,7 @@ def create_session() -> SparkSession:
 		.config(conf=conf)
 		.getOrCreate()
 	)
+	spark.sparkContext.setLogLevel("WARN")
 
 	return spark
 
@@ -78,7 +80,7 @@ def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
 	rf, rf_grid = prepare_rf()
 	nb, nb_grid = prepare_nb()
 	lr, lr_grid = prepare_lr()
-	mlp, mlp_grid = prepare_mlp(16, 3)
+	mlp, mlp_grid = prepare_mlp(18, 3)
 	svc, svc_grid = prepare_svc()
 
 	models = {
@@ -102,11 +104,13 @@ def prepare_evaluators() -> Dict[str, Evaluator]:
 
 
 def train_model(model, grid, train) -> Model:
+	cpu_count = os.cpu_count()
 	cv = CrossValidator(
 		estimator=model,
 		estimatorParamMaps=grid,
 		evaluator=MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="f1"),
-		numFolds=3
+		numFolds=3,
+		parallelism=cpu_count,
 	)
 
 	model = cv.fit(train)
@@ -128,12 +132,8 @@ def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
 
 		# Predict with the model
 		predictions = model.transform(test)
-		status("Predict test labels", True)
-
-		# Save predictions
 		predictions = predictions.select("label", "prediction")
-		predictions.coalesce(1).write.mode("overwrite").csv(f"project/output/model_{name}_predictions.csv")
-		status("Save predictions", True)
+		status("Predict test labels", True)
 
 		# Evaluate the model
 		row = {"model": str(model)}
@@ -142,6 +142,13 @@ def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
 			row[m] = score
 			status(f"Evaluate {m}: {score}", True)
 		summary.append(row)
+		print(row)
+
+		# Save predictions
+		predictions = predictions.withColumn("prediction", F.col("prediction").cast("integer"))
+		predictions = predictions.coalesce(1)
+		predictions.write.mode("overwrite").csv(f"project/output/model_{name}_predictions")
+		status("Save predictions", True)
 
 	return summary
 
@@ -178,13 +185,13 @@ def main():
 	test = test.select(cols)
 
 	# Repartition train/test
-	train = train.persist(StorageLevel.MEMORY_AND_DISK)
-	test = test.persist(StorageLevel.MEMORY_ONLY)
+	train = train.repartition(16).cache()
+	test = test.repartition(16).cache()
 	status("Repartition train/test", True)
 
-	# TODO: Save train/test
-	# train.write.mode("overwrite").json("project/data/train")
-	# test.write.mode("overwrite").json("project/data/test")
+	# Save train/test
+	train.write.mode("overwrite").json("project/data/train")
+	test.write.mode("overwrite").json("project/data/test")
 	status("Save train/test", True)
 
 	# Prepare evaluators and models
