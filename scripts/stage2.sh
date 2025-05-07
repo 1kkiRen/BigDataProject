@@ -12,7 +12,6 @@ beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password 
 beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -f sql/q7.hql
 beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 -n team29 -p $password -f sql/q8.hql
 
-
 hdfs dfs -cat project/output/q1/* >> output/q1.csv
 hdfs dfs -cat project/output/q2/* >> output/q2.csv
 hdfs dfs -cat project/output/q3/* >> output/q3.csv
