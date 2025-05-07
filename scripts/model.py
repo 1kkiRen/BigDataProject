@@ -11,6 +11,7 @@ from pyspark.ml.tuning import CrossValidator
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
 
+# pylint: disable=C0413
 sys.path.append(os.getcwd())
 from src.model.classifier.lr import prepare_lr
 from src.model.classifier.mlp import prepare_mlp
@@ -21,9 +22,17 @@ from src.model.feature import Feature
 
 
 def status(task: str, done: bool, width: int = 80):
-    green = '\033[92m'
-    yellow = '\033[93m'
-    reset = '\033[0m'
+    """
+    Print a formatted status message for a task.
+
+    Args:
+        task (str): Description of the task.
+        done (bool): Indicates whether the task is completed (True) or not (False).
+        width (int, optional): Total width for formatting output. Defaults to 80.
+    """
+    green = "\033[92m"
+    yellow = "\033[93m"
+    reset = "\033[0m"
 
     color = green if done else yellow
     status_str = f"[{color}{'Done' if done else 'Todo'}{reset}]"
@@ -31,6 +40,13 @@ def status(task: str, done: bool, width: int = 80):
 
 
 def create_session() -> SparkSession:
+    """
+    Initialize and return a SparkSession with predefined configuration for team29.
+
+    Returns:
+        SparkSession: A configured SparkSession instance with Hive support enabled.
+    """
+
     team = 29
 
     conf = (
@@ -56,6 +72,16 @@ def create_session() -> SparkSession:
 
 
 def load_data(spark: SparkSession) -> DataFrame:
+    """
+    Load and join 'records' and 'stations' datasets from Hive tables.
+
+    Args:
+        spark (SparkSession): The Spark session to use for data loading.
+
+    Returns:
+        DataFrame: A joined DataFrame combining records and station metadata.
+    """
+
     records_df = (
         spark.read
         .format("avro")
@@ -68,34 +94,49 @@ def load_data(spark: SparkSession) -> DataFrame:
         .table("team29_projectdb.stations")
     )
 
-    df = records_df.join(
+    dataset = records_df.join(
         stations_df.select("id", "latitude", "longitude"),
         stations_df["id"] == records_df["station_id"],
         how="left"
     )
 
-    return df
+    return dataset
 
 
 def prepare_models() -> Dict[str, Tuple[Classifier, Any]]:
-    rf, rf_grid = prepare_rf()
-    nb, nb_grid = prepare_nb()
-    lr, lr_grid = prepare_lr()
-    mlp, mlp_grid = prepare_mlp(18, 3)
-    svc, svc_grid = prepare_svc()
+    """
+    Prepare machine learning models and their associated hyperparameter grids.
+
+    Returns:
+        Dict[str, Tuple[Classifier, Any]]: A dictionary mapping model names to
+        tuples of Classifier instances and parameter grids.
+    """
+
+    rf_model, rf_grid = prepare_rf()
+    nb_model, nb_grid = prepare_nb()
+    lr_model, lr_grid = prepare_lr()
+    mlp_model, mlp_grid = prepare_mlp(18, 3)
+    svc_model, svc_grid = prepare_svc()
 
     models = {
-        "lr": (lr, lr_grid),
-        "nb": (nb, nb_grid),
-        "rf": (rf, rf_grid),
-        "mlp": (mlp, mlp_grid),
-        "svc": (svc, svc_grid),
+        "lr": (lr_model, lr_grid),
+        "nb": (nb_model, nb_grid),
+        "rf": (rf_model, rf_grid),
+        "mlp": (mlp_model, mlp_grid),
+        "svc": (svc_model, svc_grid),
     }
 
     return models
 
 
 def prepare_evaluators() -> Dict[str, Evaluator]:
+    """
+    Create evaluation metrics for classification tasks.
+
+    Returns:
+        Dict[str, Evaluator]: A dictionary of evaluators for accuracy and F1 score.
+    """
+
     metrics = ["accuracy", "f1"]
     evaluators = {
         m: MulticlassClassificationEvaluator(
@@ -109,8 +150,20 @@ def prepare_evaluators() -> Dict[str, Evaluator]:
 
 
 def train_model(model, grid, train) -> Model:
+    """
+    Train a single model using cross-validation.
+
+    Args:
+        model: A Spark ML classifier model.
+        grid: A parameter grid for hyperparameter tuning.
+        train (DataFrame): The training dataset.
+
+    Returns:
+        Model: The best model from cross-validation.
+    """
+
     cpu_count = os.cpu_count()
-    cv = CrossValidator(
+    cv_model = CrossValidator(
         estimator=model,
         estimatorParamMaps=grid,
         evaluator=MulticlassClassificationEvaluator(
@@ -122,13 +175,26 @@ def train_model(model, grid, train) -> Model:
         parallelism=cpu_count,
     )
 
-    model = cv.fit(train)
+    model = cv_model.fit(train)
     model = model.bestModel
 
     return model
 
 
 def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
+    """
+    Train multiple models, evaluate them, and save results and predictions.
+
+    Args:
+        evaluators (Dict[str, Evaluator]): Evaluation metrics for the models.
+        models (Dict[str, Tuple[Classifier, Any]]): Dictionary of models and their parameter grids.
+        train (DataFrame): The training dataset.
+        test (DataFrame): The test dataset.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries with evaluation results for each model.
+    """
+
     summary = []
     for name, (model, grid) in models.items():
         # Train model
@@ -146,10 +212,10 @@ def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
 
         # Evaluate the model
         row = {"model": str(model)}
-        for m, e in evaluators.items():
-            score = e.evaluate(predictions)
-            row[m] = score
-            status(f"Evaluate {m}: {score}", True)
+        for score_name, evaluator in evaluators.items():
+            score = evaluator.evaluate(predictions)
+            row[score_name] = score
+            status(f"Evaluate {score_name}: {score}", True)
         summary.append(row)
         print(row)
 
@@ -163,16 +229,21 @@ def train_models(evaluators, models, train, test) -> List[Dict[str, Any]]:
 
 
 def main():
+    """
+    Main pipeline to orchestrate the Spark ML workflow: setup, data processing,
+    model training, evaluation, and saving results.
+    """
+
     # Create session
     spark = create_session()
     status("Create session", True)
 
     # Load data
-    df = load_data(spark)
+    dataset = load_data(spark)
     status("Load data", True)
 
     # Split data
-    train, test = df.randomSplit([0.7, 0.3], seed=42)
+    train, test = dataset.randomSplit([0.7, 0.3], seed=42)
     status("Split train/test", True)
 
     # Create pipline
