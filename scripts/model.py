@@ -36,12 +36,12 @@ from pyspark.sql import functions as F
 # This line is required to run the script with pyspark.
 # pylint: disable=C0413
 sys.path.append(os.getcwd())
-from src.model.classifier.lr import prepare_lr
-from src.model.classifier.mlp import prepare_mlp
-from src.model.classifier.nb import prepare_nb
-from src.model.classifier.rf import prepare_rf
-from src.model.classifier.svc import prepare_svc
-from src.model.feature import Feature
+from scripts.classifier.lr import prepare_lr
+from scripts.classifier.mlp import prepare_mlp
+from scripts.classifier.nb import prepare_nb
+from scripts.classifier.rf import prepare_rf
+from scripts.classifier.svc import prepare_svc
+from scripts.feature import Feature
 
 
 def status(task: str, done: bool, width: int = 80):
