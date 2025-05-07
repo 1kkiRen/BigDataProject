@@ -7,8 +7,8 @@ DROP TABLE IF EXISTS records CASCADE;
 CREATE TABLE IF NOT EXISTS stations
 (
     id        VARCHAR(12) PRIMARY KEY,
-    latitude  NUMERIC(7, 4),
-    longitude NUMERIC(7, 4)
+    latitude  FLOAT,
+    longitude FLOAT
 );
 
 CREATE TABLE IF NOT EXISTS records
@@ -16,22 +16,22 @@ CREATE TABLE IF NOT EXISTS records
     record_id           SERIAL PRIMARY KEY,
     station_id          VARCHAR(12) CONSTRAINT station_id_null NOT NULL,
 
-    airnow_ozone        NUMERIC(4,1),
-    cmaq_ozone          NUMERIC(4,1),
-    cmaq_no2            NUMERIC(4,1),
-    cmaq_co             NUMERIC(6,1),
-    cmaq_oc             NUMERIC(5,1),
-    pressure            NUMERIC(7,1),
-    pbl                 NUMERIC(5,1),
-    temperature         NUMERIC(4,1) CONSTRAINT temp_check CHECK (temperature > 0),
-    wind_speed          NUMERIC(4,1),
-    wind_direction      NUMERIC(4,1) CONSTRAINT dir_check CHECK (wind_direction >= 0 and wind_direction <= 360),
-    radiation           NUMERIC(5,1),
-    cloud_fraction      NUMERIC(2,1), -- Ranges from 0 to 1
+    airnow_ozone        FLOAT CONSTRAINT pos_airnow_ozone CHECK (airnow_ozone >= 0),
+    cmaq_ozone          FLOAT CONSTRAINT pos_cmaq_ozone CHECK (cmaq_ozone >= 0),
+    cmaq_no2            FLOAT CONSTRAINT positive_no2 CHECK (cmaq_no2 >= 0),
+    cmaq_co             FLOAT CONSTRAINT positive_co CHECK (cmaq_co >= 0),
+    cmaq_oc             FLOAT CONSTRAINT positive_oc CHECK (cmaq_oc >= 0),
+    pressure            FLOAT CONSTRAINT positive_pressure CHECK (pressure > 0),
+    pbl                 FLOAT CONSTRAINT positive_pbl CHECK (pbl >= 0),
+    temperature         FLOAT CONSTRAINT temp_check CHECK (temperature > 0),
+    wind_speed          FLOAT CONSTRAINT positive_speed CHECK (wind_speed >= 0),
+    wind_direction      FLOAT CONSTRAINT dir_check CHECK (wind_direction BETWEEN 0 AND 360),
+    radiation           FLOAT CONSTRAINT positive_radiation CHECK (radiation >= 0),
+    cloud_fraction      FLOAT CONSTRAINT positive_cloud_fraction CHECK (cloud_fraction BETWEEN 0 AND 1),
 
-    month               INTEGER CONSTRAINT month_null NOT NULL CHECK (month >= 1 AND month <= 12),
+    month               INTEGER CONSTRAINT month_null NOT NULL CHECK (month BETWEEN 0 AND 12),
     day                 INTEGER CONSTRAINT day_null NOT NULL,
-    hour                INTEGER CONSTRAINT hours_null NOT NULL CHECK (hour >= 0 AND hour <= 23),
+    hour                INTEGER CONSTRAINT hours_null NOT NULL CHECK (hour BETWEEN 0 AND 23),
 
     FOREIGN KEY (station_id) REFERENCES stations (id),
 

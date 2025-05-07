@@ -104,7 +104,7 @@ def test_db(conn):
 
 
 def load_data():
-	# Download dataset from HF: https://huggingface.co/datasets/Geoweaver/ozone_training_data/tree/main
+	# Downloaded dataset from HF: https://huggingface.co/datasets/Geoweaver/ozone_training_data
 	df = pd.read_csv(DATA_DIR / "training_data.csv")
 
 	df.drop(columns=[
@@ -117,6 +117,37 @@ def load_data():
 	return df
 
 
+def check_on(records):
+	query_parts = []  # List of query conditions
+
+	def add_query_condition(column_name, condition_string):
+		if column_name not in records.columns:
+			print(f"Warning: Column '{column_name}' not in dataset. Skipping this condition.")
+			return
+
+		query_parts.append(condition_string)
+
+	# Add conditions for each constraint
+	add_query_condition("airnow_ozone", "airnow_ozone >= 0")
+	add_query_condition("cmaq_ozone", "cmaq_ozone >= 0")
+	add_query_condition("cmaq_no2", "cmaq_no2 >= 0")
+	add_query_condition("cmaq_co", "cmaq_co >= 0")
+	add_query_condition("cmaq_oc", "cmaq_oc >= 0")
+	add_query_condition("pressure", "pressure > 0")
+	add_query_condition("pbl", "pbl >= 0")
+	add_query_condition("temperature", "temperature > 0")
+	add_query_condition("wind_speed", "wind_speed >= 0")
+
+	add_query_condition("wind_direction", "(wind_direction >= 0 & wind_direction <= 360)")
+	add_query_condition("radiation", "radiation >= 0")
+	add_query_condition("cloud_fraction", "(cloud_fraction >= 0 & cloud_fraction <= 1)")
+
+	if query_parts:
+		full_query = " & ".join(query_parts)
+		records = records.query(full_query, engine='python')
+	return records
+
+
 def preprocess_data():
 	ds = load_data()
 	print("Dataset Prepared!")
@@ -124,9 +155,12 @@ def preprocess_data():
 	stations = ds[["station_id", "latitude", "longitude"]]
 	records = ds.drop(columns=["latitude", "longitude"])
 
-	# Remove duplicates and convert data to int
+	# Remove duplicates
 	stations = stations.drop_duplicates(subset="station_id")
 	records = records.drop_duplicates(subset=["station_id", "month", "day", "hour"])
+
+	# Remove data that not follow constraints
+	records = check_on(records)
 
 	# Save to csv
 	stations.to_csv(DATA_DIR / "stations.csv", index=False)
@@ -141,7 +175,6 @@ def main():
 		preprocess_data()
 		create_tables(conn)
 		import_data(conn)
-		test_db(conn)
 	except Exception as e:
 		print("Error:", e)
 		conn.rollback()
