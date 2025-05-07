@@ -14,7 +14,6 @@ LOCATION 'project/hive/warehouse/q3';
 SET hive.resultset.use.unique.column.names = false;
 
 INSERT INTO q3_results
-INSERT INTO q3_results
 SELECT 
   FLOOR(s.latitude / 5.0) * 5 AS latitude_bucket, 
   AVG(r.radiation) AS avg_radiation
