@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .vevn/bin/activate
+
 # Launch stage 1
 python scripts/build_database.py
 
