@@ -72,6 +72,8 @@ The project pipeline consists of several key stages:
 
     * Label discretization for the target variable (solar radiation).
 
+**NOTE:** both `train.json` and `test.json` are directories with smaller json files, as dataset is too large for git lfs.
+
 6. **ML Modeling:** Evaluating five different classification models: Logistic Regression, Multilayer Perceptron, Naive
    Bayes, Random Forest, and One-vs-Rest Linear SVC. Each model was trained using grid search and 3-fold
    cross-validation, with F1 score as the metric for best model selection.
